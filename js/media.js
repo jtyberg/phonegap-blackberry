@@ -22,15 +22,15 @@ MediaError.MEDIA_ERR_NETWORK 		= 2;
 MediaError.MEDIA_ERR_DECODE 		= 3;
 MediaError.MEDIA_ERR_NONE_SUPPORTED = 4;
 
-Media.prototype.play = function(successCallback, errorCallback) {
+Audio.prototype.play = function(successCallback, errorCallback) {
 	
 	PhoneGap.exec("media",[this.src]);
 };
 
-Media.prototype.pause = function() {
+Audio.prototype.pause = function() {
 	alert('Media pausing not implemented - yet.');
 };
 
-Media.prototype.stop = function() {
+Audio.prototype.stop = function() {
 	alert('Media stopping not implemented - yet.');
 };
