@@ -55,6 +55,7 @@ public final class ConnectionManager {
 
 	public static final String DATA = "data";
 	public static final String DATA_PROTOCOL = DATA + ":///";
+	public static final String ROOT = "/www/";
 	public static final String URI_SUFFIX = ";charset=utf-8;base64,";
 	public static final String REFERRER_KEY = "referer";
 	public static final String HTTP = "http";
@@ -335,6 +336,12 @@ public final class ConnectionManager {
 		// Save local directory.
 		int slashPos = dataUrl.lastIndexOf('/');
 		String directory = dataUrl.substring(0,slashPos+1);
+		if (directory.length() == 0) {
+			directory = ConnectionManager.ROOT;
+			if (dataUrl.indexOf('/') == -1) {
+				dataUrl = directory + dataUrl;
+			}
+		}
 		// Check whether the referrer has already been processed (ignore if URL uses an absolute path reference).
 		if (referrer != null && !dataUrl.startsWith("/")) {
 			String MD5key = ConnectionManager.MD5hash(referrer);
