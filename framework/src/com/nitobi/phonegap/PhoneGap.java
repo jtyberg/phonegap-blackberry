@@ -44,9 +44,11 @@ import net.rim.device.api.io.http.HttpHeaders;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Characters;
 import net.rim.device.api.system.Display;
+import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.system.KeyListener;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.BitmapField;
 import net.rim.device.api.ui.component.Status;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -65,6 +67,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 
 	public static final String PHONEGAP_PROTOCOL = "PhoneGap=";
 	private static final String DEFAULT_INITIAL_URL = "data:///www/index.html";
+	private static final String LOADING_IMAGE = "www/Default.png";
 	private static final String REFERER = "referer";  
 	private static final String REDIRECT_MSG = "You are being redirected to a different page...";
 	public Vector pendingResponses = new Vector();
@@ -72,6 +75,9 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 	private RenderingSession _renderingSession;   
     public HttpConnection  _currentConnection;
     private MainScreen _mainScreen;
+    private EncodedImage loadingImage;
+    private BitmapField loadingField = new BitmapField();
+    private MainScreen loadingScreen = new MainScreen();
     private Timer refreshTimer;
 
 	/**
@@ -102,8 +108,17 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 	private void init(final String url) {
 		commandManager = new CommandManager(this);
 		_mainScreen = new MainScreen();
-		_mainScreen.addKeyListener(new PhoneGapKeyListener(this));
 		pushScreen(_mainScreen);
+		// Add loading screen and display ASAP
+		loadingImage = EncodedImage.getEncodedImageResource( LOADING_IMAGE );
+		if (loadingImage != null) {
+			// If a loading image exists, add it to the loading field and push it onto the screen stack.
+			loadingField.setImage(loadingImage);
+			loadingScreen.add(loadingField);
+			pushScreen(loadingScreen);
+		}
+		_mainScreen.addKeyListener(new PhoneGapKeyListener(this));
+		
 		// Set up the browser/renderer.
         _renderingSession = RenderingSession.getNewInstance();
         _renderingSession.getRenderingOptions().setProperty(RenderingOptions.CORE_OPTIONS_GUID, RenderingOptions.JAVASCRIPT_ENABLED, true);
@@ -149,6 +164,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 				eventSource = null;
 				break;
 			}
+			this.showLoadingScreen();
 			// Create the request, populate header with referrer and fire off the request.
 			HttpHeaders requestHeaders = new HttpHeaders();
 			requestHeaders.setProperty(REFERER, referrer);
@@ -160,6 +176,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 			break;
 		}
 		case Event.EVENT_URL_REQUESTED: {
+			this.showLoadingScreen();
 			UrlRequestedEvent urlRequestedEvent = (UrlRequestedEvent) event;
 			String url = urlRequestedEvent.getURL();
 			HttpHeaders header = urlRequestedEvent.getHeaders();
@@ -251,6 +268,18 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 		}
 		return null;
 	}
+	public void showLoadingScreen() {
+		synchronized(Application.getEventLock()) {
+			pushScreen(this.loadingScreen);
+		}
+	}
+	public void hideLoadingScreen() {
+		synchronized(Application.getEventLock()) {
+			try {
+				popScreen(this.loadingScreen);
+			} catch(Exception e) {}
+		}
+	}
 	/**
 	 * Processes a new HttpConnection object to instantiate a new browser Field (aka WebView) object, and then resets the screen to the newly-created Field.
 	 * @param connection
@@ -288,6 +317,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
                 {
                     synchronized (Application.getEventLock()) 
                     {
+                    	// The deleteAll call will remove the loading screen if exists.
                     	_mainScreen.deleteAll();
                         _mainScreen.add(field);
                     }
@@ -301,6 +331,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
         finally {
         	browserContent = null;
 			field = null;
+			this.hideLoadingScreen();
 			// Manually call the garbage collector to clean up all of leftover objects and free up the nulled object handles.
         	System.gc();
         }
@@ -391,6 +422,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
     	public boolean keyChar(char arg0, int arg1, int arg2) {
     		// Catch BlackBerry's back key, pop history URL stack and initiate HTTP request to it.
     		if (ConnectionManager.history.size() > 1 && arg0 == Characters.ESCAPE) {
+    			phoneGap.showLoadingScreen();
     			ConnectionManager.history.pop();
     			PrimaryResourceFetchThread thread = new PrimaryResourceFetchThread((String)ConnectionManager.history.pop(), null, null, null, this.phoneGap);
     			thread.start();
