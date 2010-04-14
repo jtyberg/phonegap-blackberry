@@ -20,7 +20,7 @@
  	<target name="build" depends="clean, buildjavascript">
 		<mkdir dir="${build.dir}" />
 		<mkdir dir="www" />
-		<copy todir="www">
+		<copy todir="www" overwrite="true">
 			<fileset dir="${www.dir}" />
 			<!-- copy build phonegap.js -->
 			<fileset file="phonegap.js" />
