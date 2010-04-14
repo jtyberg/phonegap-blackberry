@@ -17,11 +17,13 @@
 	<!-- name of the application, as it appears in the BlackBerry menu -->
 	<property name="application.name" value="PhoneGap BlackBerry Test" />
  
- 	<target name="build" depends="clean">
+ 	<target name="build" depends="clean, buildjavascript">
 		<mkdir dir="${build.dir}" />
 		<mkdir dir="www" />
 		<copy todir="www">
 			<fileset dir="${www.dir}" />
+			<!-- copy build phonegap.js -->
+			<fileset file="phonegap.js" />
 		</copy>
 		<rapc output="${cod.name}" generatesourcelist="true">
 			<src>
@@ -40,6 +42,7 @@
  		<delete file="${cod.name}.jad" />
  		<delete file="${cod.name}.jar" />
 		<delete dir="www" />
+		<delete file="phonegap.js" />
 	</target>
  
 	<target name="sign" depends="build">
@@ -49,6 +52,14 @@
 	<target name="clean">
 		<delete dir="${build.dir}" />
    	</target>
+ 
+	<target name="buildjavascript">
+		<concat destfile="phonegap.js" append="true">
+			<fileset dir="../js/">
+				<include name="*.js" />
+			</fileset>
+		</concat>
+	</target>
  
 	<target name="load-simulator" depends="sign">
 		<copy todir="${simulator.home}">
