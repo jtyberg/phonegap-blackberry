@@ -2,9 +2,11 @@
 	<taskdef resource="bb-ant-defs.xml" />
 	<!-- PROPERTY DEFINITION - FILL THESE OUT! -->
 	<!-- rapc and sigtool require the jde.home property to be set -->
-	<property name="jde.home" location="C:\eclipse-blackberry\plugins\net.rim.eide.componentpack4.6.1_4.6.1.27\components\" />
+	<property name="jde.home" location="C:\eclipse-blackberry\plugins\net.rim.eide.componentpack4.6.1_4.6.1.27\components" />
 	<!-- directory of simulator to copy files to -->
-	<property name="simulator.home" location="C:\eclipse-blackberry\plugins\net.rim.eide.componentpack4.6.1_4.6.1.27\components\simulator\" />
+	<property name="simulator.home" location="${jde.home}\simulator\" />
+	<!-- directory of MDS-CS to allow XHR in the simulator -->
+	<property name="mds.home" location="${jde.home}\MDS\" />
 	<!-- directory of your phonegap assets (HTML/CSS/JS) - PhoneGap convention is to keep in a folder called 'www'. -->
 	<!-- defaults to the stock application located under the 'example' dir -->
 	<property name="www.dir" location="example" />
@@ -65,6 +67,7 @@
 		<copy todir="${simulator.home}">
 			<fileset dir="${build.dir}" includes="*.cod,*.cso,*.debug,*.jad,*.jar,*.csl,*.rapc" />
 		</copy>
+		<exec executable="${mds.home}/run.bat" dir="${mds.home}" spawn="true"></exec>
 		<exec executable="${simulator.home}/defaultSimulator.bat" dir="${simulator.home}" spawn="true"></exec>
 	</target>
 	<target name="load-device" depends="sign">
