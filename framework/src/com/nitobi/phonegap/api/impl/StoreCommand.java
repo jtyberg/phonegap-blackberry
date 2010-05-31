@@ -36,16 +36,16 @@ public class StoreCommand implements Command {
 	private static final int LOAD_COMMAND = 2;
 	private static final String CODE = "PhoneGap=store";
 	private static final String TCK_SAVE = ";if (navigator.store.save_success != null) { navigator.store.save_success(true); };";
-	private long KEY = 0x4a9ab8d0f0147f4cL;
+	private static long KEY = 0x4a9ab8d0f0147f4cL;
 	static PersistentObject store;
 	static {
 		store = PersistentStore.getPersistentObject( KEY );
 	}
 
-	public StoreCommand(PhoneGap phoneGap) {
+	public StoreCommand() {
 		// Generate a Persistent Storage key based on the application UID, which is generated at build-time by less-than-ideal string replacement inside PhoneGap.java :/
 		try {
-			this.KEY = new Long(phoneGap.APPLICATION_UID);
+			StoreCommand.KEY = Long.parseLong(PhoneGap.APPLICATION_UID);
 		} catch(NumberFormatException e) {
 			// Just keep the stock one for now if something fucked up.
 		}
@@ -63,10 +63,12 @@ public class StoreCommand implements Command {
 	}
 
 	public String execute(String instruction) {
+		Hashtable hash = new Hashtable(); // The existing hash that we have in the system.
+		String retVal = "";
+		Object storeObj = null;
 		switch (getCommand(instruction)) {
 			case SAVE_COMMAND: // Saves data associated to a key to the store hash.
 				String serialized = instruction.substring(CODE.length() + 6);
-				Hashtable hash = new Hashtable(); // The existing hash that we have in the system.
 				String[] keyValuePair = PhoneGap.splitString(serialized, '/', false);
 				// Retrieve the stored hash.
 				synchronized(store) {
@@ -87,44 +89,41 @@ public class StoreCommand implements Command {
 				keyValuePair = null;
 				return TCK_SAVE;
 			case LOADALL_COMMAND: // Retrieves the entire hash, composes the JS object for it and returns it to the browser.
-				String retVal = "";
-				Hashtable hash = new Hashtable();
 				synchronized(store) {
-					Object storeObj = store.getContents();
-					if (storeObj != null) {
-						hash = (hash)storeObj;
-						Enumeration e = hash.keys();
-						retVal = "{";
-						while (e.hasMoreElements()) {
-							String key = (String)e.nextElement();
-							String value = (String)hash.get(key);
-							retVal += "\"" + key + "\":\"" + value + "\",";
-						}
-						if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
-						retVal += "}";
-					} else {
-						retVal = "{}";
-					}
-					storeObj = null;
+					storeObj = store.getContents();
 				}
+				if (storeObj != null) {
+					hash = (Hashtable)storeObj;
+					Enumeration e = hash.keys();
+					retVal = "{";
+					while (e.hasMoreElements()) {
+						String key = (String)e.nextElement();
+						String value = (String)hash.get(key);
+						retVal += "\"" + key + "\":\"" + value + "\",";
+					}
+					if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
+					retVal += "}";
+				} else {
+					retVal = "{}";
+				}
+				storeObj = null;
 				return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success('" + retVal + "'); };";
-			case LOAD_COMMAND: // Retrives a particular value associated to a key in the hash.
-				String retVal = "null"; // default return value. return empty string? return null?
+			case LOAD_COMMAND: // Retrieves a particular value associated to a key in the hash.
+				retVal = "null"; // default return value. return empty string? return null?
 				String key = instruction.substring(CODE.length() + 6);
-				Hashtable hash = new Hashtable();
 				synchronized(store) {
-					Object storeObj = store.getContents();
-					if (storeObj != null) {
-						hash = (hash)storeObj;
-						if (hash.containsKey(key)) {
-							String value = (String)hash.get(key);
-							if (value != null) {
-								retVal = "'" + value + "'";
-							}
+					storeObj = store.getContents();
+				}
+				if (storeObj != null) {
+					hash = (Hashtable)storeObj;
+					if (hash.containsKey(key)) {
+						String value = (String)hash.get(key);
+						if (value != null) {
+							retVal = "'" + value + "'";
 						}
 					}
-					storeObj = null;
 				}
+				storeObj = null;
 				return ";if (navigator.store.load_success != null) { navigator.store.load_success('" + retVal + "'); };";
 		}
 		return null;
