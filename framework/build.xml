@@ -22,6 +22,7 @@
 	<property name="application.name" value="PhoneGap Sample" />
  
  	<target name="build" depends="clean, buildjavascript">
+		<!-- Create build/www directories, copy over www assets and freshly-built phonegap.js -->
 		<mkdir dir="${build.dir}" />
 		<mkdir dir="www" />
 		<copy todir="www" overwrite="true">
@@ -29,6 +30,9 @@
 			<!-- copy build phonegap.js -->
 			<fileset file="phonegap.js" />
 		</copy>
+		<!-- we have to do some replacement magic in PhoneGap.java, so that we create a unique key based on the app name. This is important for the BlackBerry-specific offline storage -->
+		<replace file="src/com/nitobi/phonegap/PhoneGap.java" token="%PLACEHOLDER%" value="${application.name}"/>
+		<!-- Calls the RIM compiler -->
 		<rapc output="${cod.name}" generatesourcelist="true">
 			<src>
 				<!-- for source to include, just the src folder which includes PhoneGap, and the www dir that the user specified. -->
@@ -40,6 +44,7 @@
  		<copy todir="${build.dir}">
  			<fileset dir="" includes="*.cod,*.cso,*.debug,*.jad,*.jar,*.csl,*.rapc" />
  		</copy>
+		<!-- clean up leftover files -->
  		<delete file="${cod.name}.cod" />
  		<delete file="${cod.name}.cso" />
  		<delete file="${cod.name}.debug" />
@@ -47,6 +52,8 @@
  		<delete file="${cod.name}.jar" />
 		<delete dir="www" />
 		<delete file="phonegap.js" />
+		<!-- finally, re-replace the token in PhoneGap.java with the Placeholder text, so that future calls to build will work properly! -->
+		<replace file="src/com/nitobi/phonegap/PhoneGap.java" token="${application.name}" value="%PLACEHOLDER%"/>
 	</target>
  
 	<target name="sign" depends="build">
