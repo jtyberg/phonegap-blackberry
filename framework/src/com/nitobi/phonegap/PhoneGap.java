@@ -64,7 +64,7 @@ import com.nitobi.phonegap.io.SecondaryResourceFetchThread;
  * @author Dave Johnson
  */
 public class PhoneGap extends UiApplication implements RenderingApplication {
-
+	public static final String APPLICATION_UID = "%PLACEHOLDER%"; // Gets replaced at build-time with the app name; used as a key to reference offline storage. CAVEAT: if you change your app name, you will lose any existing offline data.
 	public static final String PHONEGAP_PROTOCOL = "PhoneGap=";
 	private static final String DEFAULT_INITIAL_URL = "data:///www/index.html";
 	private static final String LOADING_IMAGE = "www/Default.png";
