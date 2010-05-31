@@ -1,7 +1,3 @@
-
-if (typeof(DeviceInfo) != 'object')
-    DeviceInfo = {};
-
 /**
  * This represents the PhoneGap API itself, and provides a global namespace for accessing
  * information about the state of PhoneGap.
@@ -16,10 +12,6 @@ PhoneGap = {
     _constructors: []
 };
 
-/**
- * Boolean flag indicating if the PhoneGap API is available and initialized.
- */
-PhoneGap.available = DeviceInfo.uuid != undefined;
 
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
