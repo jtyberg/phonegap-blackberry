@@ -16,6 +16,8 @@
 	<property name="cod.name" value="PhoneGap_Sample" />
 	<!-- password for the Signature Tool -->
 	<property name="password" value="some_password" />
+	<!-- package name - used by the alx task to build the .alx file for desktop-based app loading -->
+	<property name="package.name" value="com.test.example" />
 	<!-- name of the application, as it appears in the BlackBerry menu -->
 	<property name="application.name" value="PhoneGap Sample" />
  
@@ -51,8 +53,8 @@
 		<sigtool codfile="${build.dir}/${cod.name}.cod" password="${password}" />
 	</target>
 	<target name="alx" depends="build">
-		<alx destdir="${build.dir}" filename="WebTMS.alx">
-			<application id="com.ndic.webtms" name="WebTMS">
+		<alx destdir="${build.dir}" filename="${cod.name}.alx">
+			<application id="${package.name}" name="${application.name}">
 				<codset>
 					<fileset dir="${build.dir}" includes="*.cod" />
 				</codset>
