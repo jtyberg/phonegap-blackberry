@@ -135,7 +135,7 @@ public class StoreCommand implements Command {
 						if (hash.containsKey(key)) {
 							String value = (String)hash.get(key);
 							if (value != null) {
-								retVal = "'" + value + "'";
+								retVal = value.replace('\'', '`');
 							}
 						}
 					}
@@ -146,7 +146,7 @@ public class StoreCommand implements Command {
 				}
 			case REMOVE_COMMAND: // Removes a particular key/value pair associated to a key in the hash.
 				try {
-					key = instruction.substring(CODE.length() + 6);
+					key = instruction.substring(CODE.length() + 8);
 					synchronized(store) {
 						storeObj = store.getContents();
 					}
@@ -161,7 +161,10 @@ public class StoreCommand implements Command {
 				}
 			case NUKE_COMMAND: // Kills the persistent store.
 				try {
-					PersistentStore.destroyPersistentObject(KEY);
+					synchronized(store) {
+						store.setContents(hash);
+						store.commit();
+					}
 					return STORE_NUKE_SUCCESS;
 				} catch (Exception e) {
 					return ";if (navigator.store.nuke_error != null) { navigator.store.nuke_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
