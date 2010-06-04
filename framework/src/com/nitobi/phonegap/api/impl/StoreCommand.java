@@ -34,8 +34,12 @@ public class StoreCommand implements Command {
 	private static final int SAVE_COMMAND = 0;
 	private static final int LOADALL_COMMAND = 1;
 	private static final int LOAD_COMMAND = 2;
+	private static final int REMOVE_COMMAND = 3;
+	private static final int NUKE_COMMAND = 4;
 	private static final String CODE = "PhoneGap=store";
-	private static final String TCK_SAVE = ";if (navigator.store.save_success != null) { navigator.store.save_success(true); };";
+	private static final String STORE_SAVE_SUCCESS = ";if (navigator.store.save_success != null) { navigator.store.save_success(); };";
+	private static final String STORE_REMOVE_SUCCESS = ";if (navigator.store.remove_success != null) { navigator.store.remove_success(); };";
+	private static final String STORE_NUKE_SUCCESS = ";if (navigator.store.nuke_success != null) { navigator.store.nuke_success(); };";
 	private static long KEY = 0x4a9ab8d0f0147f4cL;
 	static PersistentObject store;
 	static {
@@ -59,6 +63,8 @@ public class StoreCommand implements Command {
 		if (command.startsWith("save")) return SAVE_COMMAND;
 		if (command.startsWith("loadAll")) return LOADALL_COMMAND;
 		if (command.startsWith("load")) return LOAD_COMMAND;
+		if (command.startsWith("remove")) return REMOVE_COMMAND;
+		if (command.startsWith("nuke")) return NUKE_COMMAND;
 		return -1;
 	}
 
@@ -66,65 +72,100 @@ public class StoreCommand implements Command {
 		Hashtable hash = new Hashtable(); // The existing hash that we have in the system.
 		String retVal = "";
 		Object storeObj = null;
+		String key = "";
 		switch (getCommand(instruction)) {
 			case SAVE_COMMAND: // Saves data associated to a key to the store hash.
-				String serialized = instruction.substring(CODE.length() + 6);
-				String[] keyValuePair = PhoneGap.splitString(serialized, '/', false);
-				// Retrieve the stored hash.
-				synchronized(store) {
-					Object tempO = store.getContents();
-					if (tempO != null) {
-						hash = (Hashtable)tempO;
+				try {
+					String serialized = instruction.substring(CODE.length() + 6);
+					String[] keyValuePair = PhoneGap.splitString(serialized, '/', false); // splitting on slash could introduce fuck-ups if the key or values contain slashes... hmm.
+					// Retrieve the stored hash.
+					synchronized(store) {
+						Object tempO = store.getContents();
+						if (tempO != null) {
+							hash = (Hashtable)tempO;
+						}
+						tempO = null;
 					}
-					tempO = null;
+					// Add the new key/value pair to the hash.
+					hash.put(keyValuePair[0], keyValuePair[1]);
+					synchronized(store) {
+						store.setContents(hash);
+						store.commit();
+					}
+					serialized = null;
+					hash = null;
+					keyValuePair = null;
+					return STORE_SAVE_SUCCESS;
+				} catch(Exception e) {
+					return ";if (navigator.store.save_error != null) { navigator.store.save_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
-				// Add the new key/value pair to the hash.
-				hash.put(keyValuePair[0], keyValuePair[1]);
-				synchronized(store) {
-					store.setContents(hash);
-					store.commit();
-				}
-				serialized = null;
-				hash = null;
-				keyValuePair = null;
-				return TCK_SAVE;
 			case LOADALL_COMMAND: // Retrieves the entire hash, composes the JS object for it and returns it to the browser.
-				synchronized(store) {
-					storeObj = store.getContents();
-				}
-				if (storeObj != null) {
-					hash = (Hashtable)storeObj;
-					Enumeration e = hash.keys();
-					retVal = "{";
-					while (e.hasMoreElements()) {
-						String key = (String)e.nextElement();
-						String value = (String)hash.get(key);
-						retVal += "\"" + key + "\":\"" + value + "\",";
+				try {
+					synchronized(store) {
+						storeObj = store.getContents();
 					}
-					if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
-					retVal += "}";
-				} else {
-					retVal = "{}";
+					if (storeObj != null) {
+						hash = (Hashtable)storeObj;
+						Enumeration e = hash.keys();
+						retVal = "{";
+						while (e.hasMoreElements()) {
+							key = (String)e.nextElement();
+							String value = (String)hash.get(key);
+							retVal += "\"" + key + "\":\"" + value + "\",";
+						}
+						if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
+						retVal += "}";
+					} else {
+						retVal = "{}";
+					}
+					storeObj = null;
+					return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success('" + retVal.replace('\'', '`') + "'); };";
+				} catch (Exception e) {
+					return ";if (navigator.store.loadAll_error != null) { navigator.store.loadAll_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
-				storeObj = null;
-				return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success('" + retVal + "'); };";
 			case LOAD_COMMAND: // Retrieves a particular value associated to a key in the hash.
-				retVal = "null"; // default return value. return empty string? return null?
-				String key = instruction.substring(CODE.length() + 6);
-				synchronized(store) {
-					storeObj = store.getContents();
-				}
-				if (storeObj != null) {
-					hash = (Hashtable)storeObj;
-					if (hash.containsKey(key)) {
-						String value = (String)hash.get(key);
-						if (value != null) {
-							retVal = "'" + value + "'";
+				try {
+					retVal = "null"; // default return value. return empty string? return null?
+					key = instruction.substring(CODE.length() + 6);
+					synchronized(store) {
+						storeObj = store.getContents();
+					}
+					if (storeObj != null) {
+						hash = (Hashtable)storeObj;
+						if (hash.containsKey(key)) {
+							String value = (String)hash.get(key);
+							if (value != null) {
+								retVal = "'" + value + "'";
+							}
 						}
 					}
+					storeObj = null;
+					return ";if (navigator.store.load_success != null) { navigator.store.load_success('" + retVal + "'); };";
+				} catch (Exception e) {
+					return ";if (navigator.store.load_error != null) { navigator.store.load_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
-				storeObj = null;
-				return ";if (navigator.store.load_success != null) { navigator.store.load_success('" + retVal + "'); };";
+			case REMOVE_COMMAND: // Removes a particular key/value pair associated to a key in the hash.
+				try {
+					key = instruction.substring(CODE.length() + 6);
+					synchronized(store) {
+						storeObj = store.getContents();
+					}
+					if (storeObj != null) {
+						hash = (Hashtable)storeObj;
+						hash.remove(key);
+					}
+					storeObj = null;
+					return STORE_REMOVE_SUCCESS;
+				} catch (Exception e) {
+					return ";if (navigator.store.remove_error != null) { navigator.store.remove_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
+				}
+			case NUKE_COMMAND: // Kills the persistent store.
+				try {
+					PersistentStore.destroyPersistentObject(KEY);
+					return STORE_NUKE_SUCCESS;
+				} catch (Exception e) {
+					return ";if (navigator.store.nuke_error != null) { navigator.store.nuke_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
+				}
 		}
 		return null;
 	}
