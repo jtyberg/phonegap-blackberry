@@ -40,6 +40,7 @@ public class StoreCommand implements Command {
 	private static final String STORE_SAVE_SUCCESS = ";if (navigator.store.save_success != null) { navigator.store.save_success(); };";
 	private static final String STORE_REMOVE_SUCCESS = ";if (navigator.store.remove_success != null) { navigator.store.remove_success(); };";
 	private static final String STORE_NUKE_SUCCESS = ";if (navigator.store.nuke_success != null) { navigator.store.nuke_success(); };";
+	private static final String JAVASCRIPT_NULL = "null";
 	private static long KEY = 0x4a9ab8d0f0147f4cL;
 	static PersistentObject store;
 	static {
@@ -77,7 +78,9 @@ public class StoreCommand implements Command {
 			case SAVE_COMMAND: // Saves data associated to a key to the store hash.
 				try {
 					String serialized = instruction.substring(CODE.length() + 6);
-					String[] keyValuePair = PhoneGap.splitString(serialized, '/', false); // splitting on slash could introduce fuck-ups if the key or values contain slashes... hmm.
+					int slashPos = serialized.indexOf("/");
+					key = serialized.substring(0, slashPos);
+					String value = serialized.substring(slashPos+1);
 					// Retrieve the stored hash.
 					synchronized(store) {
 						Object tempO = store.getContents();
@@ -87,14 +90,14 @@ public class StoreCommand implements Command {
 						tempO = null;
 					}
 					// Add the new key/value pair to the hash.
-					hash.put(keyValuePair[0], keyValuePair[1]);
+					hash.put(key, value);
 					synchronized(store) {
 						store.setContents(hash);
 						store.commit();
 					}
 					serialized = null;
 					hash = null;
-					keyValuePair = null;
+					value = null;
 					return STORE_SAVE_SUCCESS;
 				} catch(Exception e) {
 					return ";if (navigator.store.save_error != null) { navigator.store.save_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
@@ -107,25 +110,28 @@ public class StoreCommand implements Command {
 					if (storeObj != null) {
 						hash = (Hashtable)storeObj;
 						Enumeration e = hash.keys();
-						retVal = "{";
+						retVal = "[";
 						while (e.hasMoreElements()) {
 							key = (String)e.nextElement();
 							String value = (String)hash.get(key);
-							retVal += "\"" + key + "\":\"" + value + "\",";
+							// If value is a JS object, inject key as a property of the object.
+							retVal += JavaScriptify(key, value);
+							retVal += ",";
+							value = null;
 						}
 						if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
-						retVal += "}";
+						retVal += "]";
 					} else {
-						retVal = "{}";
+						retVal = "[]";
 					}
 					storeObj = null;
-					return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success('" + retVal.replace('\'', '`') + "'); };";
+					return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success(" + retVal + "); };";
 				} catch (Exception e) {
 					return ";if (navigator.store.loadAll_error != null) { navigator.store.loadAll_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
 			case LOAD_COMMAND: // Retrieves a particular value associated to a key in the hash.
 				try {
-					retVal = "null"; // default return value. return empty string? return null?
+					retVal = JAVASCRIPT_NULL; // default return value.
 					key = instruction.substring(CODE.length() + 6);
 					synchronized(store) {
 						storeObj = store.getContents();
@@ -134,13 +140,16 @@ public class StoreCommand implements Command {
 						hash = (Hashtable)storeObj;
 						if (hash.containsKey(key)) {
 							String value = (String)hash.get(key);
-							if (value != null) {
-								retVal = value.replace('\'', '`');
-							}
+							retVal = JavaScriptify(key, value);
+							value = null;
+						} else {
+							retVal = JAVASCRIPT_NULL;
 						}
+					} else {
+						retVal = JAVASCRIPT_NULL;
 					}
 					storeObj = null;
-					return ";if (navigator.store.load_success != null) { navigator.store.load_success('" + retVal + "'); };";
+					return ";if (navigator.store.load_success != null) { navigator.store.load_success(" + retVal + "); };";
 				} catch (Exception e) {
 					return ";if (navigator.store.load_error != null) { navigator.store.load_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
@@ -171,5 +180,22 @@ public class StoreCommand implements Command {
 				}
 		}
 		return null;
+	}
+	/**
+	 * Used for storage. Takes a key/value pair and returns as a properly-formatted JSON object, depending on the type of value returned.
+	 * @param key The key used to retrieve the value.
+	 * @param value The value returned from the store.
+	 * @return A JSON object. If the value is a JSON object itself, the key is appended as a member to the object. If not, a JSON object containing 'key' and 'value' members is returned.
+	 */
+	private String JavaScriptify(String key, String value) {
+		if (value == null) {
+			return JAVASCRIPT_NULL;
+		} else {
+			if (value.startsWith("{") && value.endsWith("}")) {
+				return value.substring(0,value.length()-1) + ",key:\"" + key + "\"}";
+			} else {
+				return "{key:\"" + key + "\",value:\"" + value + "\"}";
+			}
+		}
 	}
 }
