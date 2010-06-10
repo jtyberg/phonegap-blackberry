@@ -35,7 +35,7 @@ import com.nitobi.phonegap.api.Command;
  */
 public class TelephonyCommand implements Command {
 
-	private static final String CODE = "PhoneGap=send"; 
+	private static final String CODE = "PhoneGap=call"; 
 
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);

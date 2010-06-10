@@ -12,7 +12,7 @@ function Telephony() {
  */
 Telephony.prototype.send = function(number) {
 	this.number = number;
-	PhoneGap.exec("send", [this.number]);
+	PhoneGap.exec("call", [this.number]);
 }
 
 if (typeof navigator.telephony == "undefined") navigator.telephony = new Telephony();
