@@ -110,19 +110,18 @@ public class StoreCommand implements Command {
 					if (storeObj != null) {
 						hash = (Hashtable)storeObj;
 						Enumeration e = hash.keys();
-						retVal = "[";
+						retVal = "{";
 						while (e.hasMoreElements()) {
 							key = (String)e.nextElement();
 							String value = (String)hash.get(key);
-							// If value is a JS object, inject key as a property of the object.
-							retVal += JavaScriptify(key, value);
+							retVal += key + ":'" + value + "'";
 							retVal += ",";
 							value = null;
 						}
 						if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
-						retVal += "]";
+						retVal += "}";
 					} else {
-						retVal = "[]";
+						retVal = "{}";
 					}
 					storeObj = null;
 					return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success(" + retVal + "); };";
@@ -140,7 +139,7 @@ public class StoreCommand implements Command {
 						hash = (Hashtable)storeObj;
 						if (hash.containsKey(key)) {
 							String value = (String)hash.get(key);
-							retVal = JavaScriptify(key, value);
+							retVal = "'" + value + "'";
 							value = null;
 						} else {
 							retVal = JAVASCRIPT_NULL;
@@ -180,22 +179,5 @@ public class StoreCommand implements Command {
 				}
 		}
 		return null;
-	}
-	/**
-	 * Used for storage. Takes a key/value pair and returns as a properly-formatted JSON object, depending on the type of value returned.
-	 * @param key The key used to retrieve the value.
-	 * @param value The value returned from the store.
-	 * @return A JSON object. If the value is a JSON object itself, the key is appended as a member to the object. If not, a JSON object containing 'key' and 'value' members is returned.
-	 */
-	private String JavaScriptify(String key, String value) {
-		if (value == null) {
-			return JAVASCRIPT_NULL;
-		} else {
-			if (value.startsWith("{") && value.endsWith("}")) {
-				return value.substring(0,value.length()-1) + ",key:\"" + key + "\"}";
-			} else {
-				return "{key:\"" + key + "\",value:\"" + value + "\"}";
-			}
-		}
 	}
 }

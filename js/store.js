@@ -20,19 +20,19 @@ Store.prototype.getAll = function(successCallback,errorCallback) {
 Store.prototype.put = function(successCallback,errorCallback,key,data) {
 	this.save_success = successCallback;
 	this.save_error = errorCallback;
-	PhoneGap.exec("store",["save",key,data]);
+	PhoneGap.exec("store",["save",encodeURIComponent(key),data]);
 }
 
 Store.prototype.get = function(successCallback,errorCallback,key) {
 	this.load_success = successCallback;
 	this.load_error = errorCallback;
-	PhoneGap.exec("store",["load",key]);
+	PhoneGap.exec("store",["load",encodeURIComponent(key)]);
 }
 
 Store.prototype.remove = function(successCallback, errorCallback, key) {
 	this.remove_success = successCallback;
 	this.remove_error = errorCallback;
-	PhoneGap.exec("store", ["remove",key]);
+	PhoneGap.exec("store", ["remove",encodeURIComponent(key)]);
 }
 Store.prototype.nuke = function(successCallback, errorCallback) {
 	this.nuke_success = successCallback;
