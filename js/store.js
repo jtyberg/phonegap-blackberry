@@ -12,7 +12,15 @@ function Store() {
 };
 
 Store.prototype.getAll = function(successCallback,errorCallback) {
-	this.loadAll_success = successCallback;
+	// Wrap the success callback with a little object parses that decodes the keys and composes into a new JSON obj.
+	// We do this because we encode all keys as they go into offline storage, so we have to decode on the way back.
+	this.loadAll_success = function(obj){
+		var trueObj = {};
+		for (var prop in obj) {
+			trueObj[decodeURIComponent(prop)] = obj[prop];
+		}
+		successCallback(trueObj);
+	}
 	this.loadAll_error = errorCallback;
 	PhoneGap.exec("store",["loadAll"]);
 }
