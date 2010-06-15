@@ -160,7 +160,12 @@ public class StoreCommand implements Command {
 					}
 					if (storeObj != null) {
 						hash = (Hashtable)storeObj;
-						hash.remove(key);
+						if (hash.remove(key) != null) {
+							synchronized(store) {
+								store.setContents(hash);
+								store.commit();
+							}
+						}
 					}
 					storeObj = null;
 					return STORE_REMOVE_SUCCESS;
