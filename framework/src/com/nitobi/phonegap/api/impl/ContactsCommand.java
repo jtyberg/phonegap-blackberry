@@ -319,6 +319,6 @@ public class ContactsCommand implements Command {
 			formatted += (lastName != null? " " + lastName : "");
 			buff.append(",'formatted':'" + formatted + "'}");
 	    }
-		buff.append("'}");
+		buff.append("}");
 	}
 }
