@@ -87,7 +87,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 		PhoneGap bridge = args.length > 0 ? new PhoneGap(args[0]) : new PhoneGap();
 		bridge.enterEventDispatcher();
 	}
-
+	
 	public PhoneGap() {
 		init(DEFAULT_INITIAL_URL);
 	}
@@ -340,15 +340,23 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
     {       
         (new Thread(runnable)).start();
     }
-    public static final String joinString(final String[] data, final char joinChar) {
-    	StringBuffer b = new StringBuffer();
-    	int nums = data.length;
-    	for (int i = 0; i < nums; i++) {
-    		b.append(data[i]);
-    		b.append(joinChar);
+    /**
+     * An analogous function to String.replaceAll from J2SE, but unavailable on Micro. Courtesy of Jijo from http://www.itgalary.com/forum_posts.asp?TID=871
+     * @param _text
+     * @return 
+     */
+    public static final String replace(String _text, String _searchStr, String _replacementStr) {
+    	StringBuffer sb = new StringBuffer();
+    	int searchStringPos = _text.indexOf(_searchStr);
+    	int startPos = 0;
+    	int searchStringLength = _searchStr.length();
+    	while (searchStringPos != -1) {
+    		sb.append(_text.substring(startPos, searchStringPos)).append(_replacementStr);
+    		startPos = searchStringPos + searchStringLength;
+    		searchStringPos = _text.indexOf(_searchStr, startPos);
     	}
-    	if (b.length() > 0) b.deleteCharAt(b.length()-1);
-    	return b.toString();
+    	sb.append(_text.substring(startPos,_text.length()));
+    	return sb.toString();
     }
     public static final String[] splitString(final String data, final char splitChar, final boolean allowEmpty)
     {
