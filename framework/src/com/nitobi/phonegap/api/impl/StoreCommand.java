@@ -114,7 +114,7 @@ public class StoreCommand implements Command {
 						while (e.hasMoreElements()) {
 							key = (String)e.nextElement();
 							String value = (String)hash.get(key);
-							retVal += key + ":'" + value + "'";
+							retVal += "'" + key + "':'" + value + "'";
 							retVal += ",";
 							value = null;
 						}
