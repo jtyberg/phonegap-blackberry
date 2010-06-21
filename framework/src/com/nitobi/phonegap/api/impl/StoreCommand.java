@@ -114,7 +114,9 @@ public class StoreCommand implements Command {
 						while (e.hasMoreElements()) {
 							key = (String)e.nextElement();
 							String value = (String)hash.get(key);
-							retVal += "'" + key + "':'" + PhoneGap.replace(value, "'", "\'") + "'";
+							value = PhoneGap.replace(value, "'", "\'");
+							value = PhoneGap.replace(value, "\"", "\\\"");
+							retVal += "'" + key + "':'" + value + "'";
 							retVal += ",";
 							value = null;
 						}
@@ -139,7 +141,9 @@ public class StoreCommand implements Command {
 						hash = (Hashtable)storeObj;
 						if (hash.containsKey(key)) {
 							String value = (String)hash.get(key);
-							retVal = "'" + PhoneGap.replace(value, "'", "\'") + "'";
+							value = PhoneGap.replace(value, "'", "\'");
+							value = PhoneGap.replace(value, "\"", "\\\"");
+							retVal = "'" + value + "'";
 							value = null;
 						} else {
 							retVal = JAVASCRIPT_NULL;
