@@ -98,15 +98,16 @@ public final class ConnectionManager {
 				}
 				conn = getInternalConnection(url, referrer);
 			} else {
-				// Add URL to our own history stack.
-				if (url.endsWith(".html") || url.endsWith(".htm")) {
-					history.push(url);
-				}
-				System.out.println("[PhoneGap] Retrieving resource '" + url + "'");
 				if (isInternal(url,null)) {
+					// Add URL to our own history stack.
+					if (url.endsWith(".html") || url.endsWith(".htm")) {
+						history.push(url);
+					}
 					conn = getInternalConnection(url,null);
 				} else {
-					conn = getExternalConnection(url);
+					// Invoke native browser.
+					ConnectionManager.invokeBrowser(url);
+					return conn;
 				}
 			}
 		} else {
@@ -246,15 +247,15 @@ public final class ConnectionManager {
 			}
 		}
 	}
-
-	private static HttpConnection getExternalConnection(String url) {
-		try {
-			HttpConnection con = (HttpConnection)Connector.open(url);
-			return con;
-		} catch (Exception ex) {
-			return null;
-		}
+	/**
+	 * Invokes the native browser on the BlackBerry and sends it to a specific URL.
+	 * @param url The external URL to load into the native browser app.
+	 */
+	private static void invokeBrowser(String url) {
+		BrowserSession bSession = Browser.getDefaultSession();
+		bSession.displayPage(url);
 	}
+	
 	/**
 	 * Returns an HttpConnection to a resource local to the device.
 	 * @param url The URL of the local reference.
