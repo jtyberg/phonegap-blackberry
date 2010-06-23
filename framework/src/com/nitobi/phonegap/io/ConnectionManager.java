@@ -235,9 +235,7 @@ public final class ConnectionManager {
 			}
 			header = null;
 		}
-		return (url != null) && (url.startsWith(ConnectionManager.DATA_PROTOCOL) || 
-			url.startsWith(ConnectionManager.DATA_PROTOCOL.substring(0, 
-			ConnectionManager.DATA_PROTOCOL.indexOf('/'))));
+		return (url != null) && url.startsWith(ConnectionManager.DATA_PROTOCOL);
 	}
 
 	private static void close(Connection connection) {
@@ -325,12 +323,7 @@ public final class ConnectionManager {
 		return outputHttp;
 	}
 	public static String[] cleanUpRequestURL(String inURL, String referrer) {
-		String dataUrl = inURL;
-		if (inURL.startsWith(ConnectionManager.DATA_PROTOCOL)) 
-			dataUrl = inURL.substring(ConnectionManager.DATA_PROTOCOL.length() - 1);
-		else if (inURL.startsWith(ConnectionManager.DATA_PROTOCOL.substring(0, 
-				ConnectionManager.DATA_PROTOCOL.indexOf('/') + 1))) 
-			dataUrl = inURL.substring(ConnectionManager.DATA_PROTOCOL.indexOf('/'));
+		String dataUrl = inURL.startsWith(ConnectionManager.DATA_PROTOCOL) ? inURL.substring(ConnectionManager.DATA_PROTOCOL.length() - 1) : inURL;
 		int slash = dataUrl.indexOf('/');
 		// Clean up the URL from BB's weird bullshit - they change the URL for (I think) locally requested resources that are referenced with relative URLs.
 		if (inURL.startsWith("data://text/html;charset=utf-8;base64,") && referrer != null) {
