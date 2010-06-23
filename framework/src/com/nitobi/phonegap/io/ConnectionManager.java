@@ -38,6 +38,8 @@ import javax.microedition.io.InputConnection;
 
 import com.twmacinta.util.MD5;
 
+import net.rim.blackberry.api.browser.Browser;
+import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.device.api.browser.field.RequestedResource;
 import net.rim.device.api.io.Base64OutputStream;
 import net.rim.device.api.io.http.HttpHeaders;
