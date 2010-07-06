@@ -121,8 +121,7 @@ public class StoreCommand implements Command {
 						while (e.hasMoreElements()) {
 							key = (String)e.nextElement();
 							String value = (String)hash.get(key);
-							value = PhoneGap.replace(value, "'", "\'");
-							value = PhoneGap.replace(value, "\"", "\\\"");
+							value = escapeString(value);
 							retVal += "'" + key + "':'" + value + "'";
 							retVal += ",";
 							value = null;
@@ -148,8 +147,7 @@ public class StoreCommand implements Command {
 						hash = (Hashtable)storeObj;
 						if (hash.containsKey(key)) {
 							String value = (String)hash.get(key);
-							value = PhoneGap.replace(value, "'", "\'");
-							value = PhoneGap.replace(value, "\"", "\\\"");
+							value = escapeString(value);
 							retVal = "'" + value + "'";
 							value = null;
 						} else {
@@ -195,5 +193,17 @@ public class StoreCommand implements Command {
 				}
 		}
 		return null;
+	}
+	
+	private String escapeString(String value) {
+		// Replace the following:
+		//   => \ with \\
+		//   => " with \"
+		//   => ' with \'
+		value = PhoneGap.replace(value, "\\", "\\\\");
+		value = PhoneGap.replace(value, "\"", "\\\"");
+		value = PhoneGap.replace(value, "'", "\\'");
+		
+		return value;
 	}
 }
