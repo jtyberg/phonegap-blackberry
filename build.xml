@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="phonegap" default="build">
+	<taskdef resource="bb-ant-defs.xml" />
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
+	<property name="framework.dir" location="framework" />
+	<property name="framework.build.dir" location="${framework.dir}/build" />
+	<property name="app.resources.dir" location="app" />
+	<property name="js.dir" location="js" />
+
+	<property prefix="project" file="${framework.dir}/project.properties" /> 
+	<property file="${framework.dir}/common.properties" />
+
+	<available file="${jde.home}" property="jde.home.available" />
+	<fail unless="jde.home.available" message="jde.home path not set correctly in ${framework.dir}/common.properties." />
+	
+	<path id="import.jars">
+		<fileset dir="${framework.dir}/lib" includes="*.jar" />
+	</path>
+
+	<path id="src.files">
+		<fileset dir="${framework.dir}/src" />
+	</path>
+
+	<target name="build">
+		<!-- depends on doing the plugin stuff -->
+		<mkdir dir="${framework.build.dir}" />
+		<rapc output="${project.output}" destdir="${framework.build.dir}" generatesourcelist="true">
+			<import refid="import.jars" />
+			<src refid="src.files" />
+			<jdp file="${framework.dir}/project.properties" />
+		</rapc>
+		<echo>PhoneGapBlackbBerryLib built to ${framework.build.dir}</echo>
+	</target>
+
+	<target name="alx" depends="build">
+		<alx destdir="${framework.build.dir}" filename="${cod.name}.alx">
+			<application id="${package.name}" name="${application.name}">
+				<codset>
+					<fileset dir="${framework.build.dir}" includes="*.cod" />
+				</codset>
+			</application>
+		</alx>
+	</target>
+
+	<target name="clean">
+		<delete dir="${framework.dir}/build" />
+	</target>
+
+	<target name="sign" depends="build">
+		<sigtool codfile="${framework.dir}/build/${project.output}.cod" jdehome="${sigtool.jde}" password="${sigtool.password}" />
+		<delete file="${framework.dir}/LogFile.txt" />
+	</target>
+
+	<target name="load-device" depends="sign">
+		<exec executable="${jde.home}/bin/JavaLoader.exe">
+			<arg value="-usb" />
+			<arg value="load" />
+			<arg file="${framework.dir}/build/${project.output}.cod" />
+		</exec>
+	</target>
+
+	<target name="load-simulator" depends="build">
+		<copy todir="${simulator.home}">
+			<fileset dir="${framework.dir}/build/lib" includes="*.*" />
+			<fileset dir="${framework.dir}/build" includes="*.cod,*.csl,*.cso,*.debug,*.jar" />
+		</copy>
+		
+		<exec executable="${mds.home}/run.bat" dir="${mds.home}" spawn="true"></exec>
+		<exec executable="${simulator.home}/defaultSimulator.bat" dir="${simulator.home}" spawn="true"></exec>
+	</target>
+
+	<target name="clean-simulator">
+		<exec executable="${simulator.home}/clean.bat" dir="${simulator.home}"></exec>
+	</target>
+	
+	<target name="build-javascript">
+		<mkdir dir="${js.dir}/lib" />
+		<concat destfile="${js.dir}/lib/phonegap.js" append="true">
+			<fileset dir="${js.dir}/src">
+				<include name="*.js" />
+			</fileset>
+		</concat>
+		<echo>phonegap.js built to ${js.dir}/lib folder.</echo>
+	</target>
+	
+	<target name="create" depends="build,build-javascript">
+		<property name="app.name" value="MyApp" />
+		<property name="output.dir" location="MyApp" />
+		<property name="package" value="com.foo" />
+
+		<propertyregex property="package.path"
+               input="${package}"
+               regexp="\."
+               replace="/"
+               global="true" />
+
+		<mkdir dir="${output.dir}" />
+		<mkdir dir="${output.dir}/src/${package.path}" />
+		<echo file="${output.dir}/src/${package.path}/${app.name}.java">
+package ${package};
+
+public class ${app.name} extends com.nitobi.phonegap.PhoneGap {
+	public static void main(String[] args) {
+		${app.name} bridge = args.length > 0 ? new ${app.name}(args[0]) : new ${app.name}();
+		bridge.enterEventDispatcher();
+	}
+	
+	public ${app.name}() {
+		super();
+	}
+
+	public ${app.name}(final String url) {
+		super(url);
+	}
+}
+		</echo>
+
+		<mkdir dir="${output.dir}/lib" />
+		<copy todir="${output.dir}/lib">
+			<fileset dir="${framework.dir}/build" includes="*.cod,*.cso,*.debug,*.jad,*.jar,*.csl,*.rapc"  />
+		</copy>
+
+		<mkdir dir="${output.dir}/www" />
+		<copy todir="${output.dir}/www">
+			<fileset dir="${app.resources.dir}/www" />
+		</copy>
+
+		<copy todir="${output.dir}/www" file="${js.dir}/lib/phonegap.js" />
+
+		<echo file="${output.dir}/common.properties">
+jde.java.home = $${java.home}
+jde.home = C:\\Program Files\\eclipse\\plugins\\net.rim.eide.componentpack4.5.0_4.5.0.16\\components
+simulator.home = $${jde.home}\\simulator
+mds.home = $${jde.home}\\MDS
+sigtool.jde = $${jde.home}
+sigtool.password = YourPassword
+		</echo>
+
+		<echo file="${output.dir}/project.properties">
+output=Foobar
+title=Foobar
+type=cldc
+		</echo>
+		
+		<copy file="${app.resources.dir}/build.xml" tofile="${output.dir}/build.xml" />
+
+		<!--
+		- create an eclipse project with PhoneGapBlackBerryLib.jar in the build path
+		-->
+		
+		<echo>Your PhoneGapBlackBerry app has been generated in ${output.dir}.</echo>
+
+	</target>
+</project>

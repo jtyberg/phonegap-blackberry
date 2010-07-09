@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="build-common" default="build">
+	<taskdef resource="bb-ant-defs.xml" />
+
+	<!-- import project properties (project basedir is searched) -->
+	<property prefix="project" file="project.properties" />
+
+	<property file="common.properties" />
+
+	<property name="build.dir" location="build" />
+
+	<path id="import.jars">
+		<fileset dir="build/lib" includes="*.jar" />
+	</path>
+
+	<path id="src.files">
+		<fileset dir="src" />
+		<fileset dir="${build.dir}/www" />
+	</path>
+
+	<target name="build">
+		<!-- phonegap.js ... wtf -->
+		<!-- Copy over the PhoneGapBlackBerryLibrary -->
+		<mkdir dir="${build.dir}/lib" />
+		<copy todir="${build.dir}/lib">
+			<fileset dir="lib" includes="**/*" />
+		</copy>
+		<!-- Copy over the www stuff since RAPC won't keep folder structure otherwise -->
+		<mkdir dir="${build.dir}/www" />
+		<copy todir="${build.dir}/www">
+			<fileset dir="www" includes="**/*" />
+		</copy>
+		<rapc output="${project.output}" destdir="${build.dir}" generatesourcelist="true">
+			<import refid="import.jars" />
+			<src refid="src.files" />
+			<jdp file="${basedir}/project.properties" />
+		</rapc>
+		<delete dir="${build.dir}/www" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+
+	<target name="sign" depends="build">
+		<sigtool codfile="build/${project.output}.cod" jdehome="${sigtool.jde}" password="${sigtool.password}" />
+		<delete file="LogFile.txt" />
+	</target>
+
+	<target name="load-device" depends="sign">
+		<exec executable="${jde.home}/bin/JavaLoader.exe">
+			<arg value="-usb" />
+			<arg value="load" />
+			<arg file="build/${project.output}.cod" />
+		</exec>
+	</target>
+
+	<target name="load-simulator" depends="build">
+		<copy todir="${simulator.home}">
+			<fileset dir="build/lib" includes="*.*" />
+			<fileset dir="build" includes="*.cod,*.csl,*.cso,*.debug,*.jar" />
+		</copy>
+		
+		<exec executable="${mds.home}/run.bat" dir="${mds.home}" spawn="true"></exec>
+		<exec executable="${simulator.home}/defaultSimulator.bat" dir="${simulator.home}" spawn="true"></exec>
+	</target>
+
+	<target name="clean-simulator">
+		<exec executable="${simulator.home}/clean.bat" dir="${simulator.home}"></exec>
+	</target>
+</project>
