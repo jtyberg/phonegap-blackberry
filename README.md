@@ -32,13 +32,14 @@ Create a PhoneGap project with Eclipse
 
 Building PhoneGap BlackBerry Projects with Apache Ant
 -------------------------------------------------------------
-You'll need all the prerequisites listed by BB Ant Tools (http://bb-ant-tools.sourceforge.net/). If you want access to building using Ant from Eclipse,
+You'll need all the prerequisites listed by BB Ant Tools (http://bb-ant-tools.sourceforge.net/) and Ant-Contrib. Both are in the phonegap-blackberry/util folder. If you want access to building using Ant from Eclipse,
 check out http://www.slashdev.ca/2007/05/30/blackberry-development-with-ant-eclipse/ for instructions on how to do it.
 
 1. Clone the PhoneGap repository.
-2. Edit the build.xml file in phonegap-blackberry/framework and set the paths at the top of the file, in the <property> elements, to match your environment setup. Also be sure to set your signature key password in the password <property>. The 'www.dir' <property> element specifies where your PhoneGap assets are: your HTML, CSS and JavaScript.
-3. Open up a command-line and, assuming you have Ant on your system PATH, cd over to phonegap-blackberry/framework directory.
-4. Run 'ant' from the command-line. It'll default to the 'build' task, which will build your binaries into the 'build' directory. You can also explicitly specify other tasks to run:
+2. Edit the common.properties and project.properties files in phonegap-blackberry/framework. The paths in common.properties need to match your environment setup and the project.properties defines your project name etc.
+3. Open up a command-line to the phonegap-blackberry folder.
+4. Run 'ant create -Dapp.name=MyApp -Doutput.dir=My/Relative/App/Dir -Dpackage=com.foobar' from the command-line. It'll build the PhoneGap BlackBerry lib and create a new phonegap.js file to be used in your BlackBerry application and create a new project folder in the output.dir folder. The project folder could then be opened in Eclipse if it is so desired.
+5. From the command-line again change to the output.dir folder where you can now run 'ant load-simulator' and that will build your new application and load it on the default simulator. There are other tasks that you can also run:
    a) 'ant sign': Runs the 'build' task first, and then runs the signature tool on the compiled binary. Make sure to specify the 'password' property at the top of the build.xml file, otherwise the signature tool will fail!
    b) 'ant load-simulator': Runs the 'sign' task first, then copies the signed binaries over to the simulator directory you specified at the top of the build.xml and finally runs the simulator. You should see your application under the BB Menu -> Downloads.
    c) 'ant load-device':	Runs the 'sign' task first, then executes the javaloader tool to load the signed binaries onto an attached (via USB) device.
