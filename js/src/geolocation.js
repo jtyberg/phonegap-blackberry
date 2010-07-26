@@ -13,7 +13,7 @@ function Geolocation() {
         onLocationChanged: [],
         onError:           []
     };
-};
+}
 
 /**
  * Asynchronously aquires the current position.
@@ -25,27 +25,27 @@ function Geolocation() {
  * such as timeout.
  */
 Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallback, options) {
-    var referenceTime = 0;
-    if (this.lastPosition)
+    var referenceTime = 0, timeout = 20000, interval = 500, delay = 0, dis = this, timer;
+    if (this.lastPosition) {
         referenceTime = this.lastPosition.timeout;
-    else
+    } else {
         this.start(options);
+    }
 
-    var timeout = 20000;
-    var interval = 500;
-    if (typeof(options) == 'object' && options.interval)
+    if (typeof(options) === 'object' && options.interval) {
         interval = options.interval;
+    }
 
-    if (typeof(successCallback) != 'function')
+    if (typeof(successCallback) !== 'function') {
         successCallback = function() {};
-    if (typeof(errorCallback) != 'function')
+    }
+    if (typeof(errorCallback) !== 'function') {
         errorCallback = function() {};
+    }
 
-    var dis = this;
-    var delay = 0;
-    var timer = setInterval(function() {
+    timer = setInterval(function() {
         delay += interval;
-        if (dis.lastPosition != null && dis.lastPosition.timestamp > referenceTime) {
+        if (dis.lastPosition !== null && dis.lastPosition.timestamp > referenceTime) {
             successCallback(dis.lastPosition);
             clearInterval(timer);
         } else if (delay >= timeout) {
@@ -67,13 +67,14 @@ Geolocation.prototype.getCurrentPosition = function(successCallback, errorCallba
 Geolocation.prototype.watchPosition = function(successCallback, errorCallback, options) {
 	// Invoke the appropriate callback with a new Position object every time the implementation 
 	// determines that the position of the hosting device has changed. 
-	
+	var frequency = 10000, that = this;
+
 	this.getCurrentPosition(successCallback, errorCallback, options);
-	var frequency = 10000;
-        if (typeof(options) == 'object' && options.frequency)
-            frequency = options.frequency;
-	
-	var that = this;
+
+    if (typeof(options) === 'object' && options.frequency) {
+        frequency = options.frequency;
+    }
+
 	return setInterval(function() {
 		that.getCurrentPosition(successCallback, errorCallback, options);
 	}, frequency);
@@ -93,10 +94,10 @@ Geolocation.prototype.clearWatch = function(watchId) {
  * @param {PositionOptions} position The current position.
  */
 Geolocation.prototype.setLocation = function(position) {
+    var i = 0;
     this.lastPosition = position;
-    for (var i = 0; i < this.callbacks.onLocationChanged.length; i++) {
-        var f = this.callbacks.onLocationChanged.shift();
-        f(position);
+    for (; i < this.callbacks.onLocationChanged.length; i++) {
+        this.callbacks.onLocationChanged.shift()(position);
     }
 };
 
@@ -105,14 +106,14 @@ Geolocation.prototype.setLocation = function(position) {
  * @param {String} message The text of the error message.
  */
 Geolocation.prototype.setError = function(message) {
+    var i = 0;
     this.lastError = message;
-    for (var i = 0; i < this.callbacks.onError.length; i++) {
-        var f = this.callbacks.onError.shift();
-        f(message);
+    for (; i < this.callbacks.onError.length; i++) {
+        this.callbacks.onError.shift()(message);
     }
 };
 
-if (typeof navigator.geolocation == "undefined") navigator.geolocation = new Geolocation();
+if (typeof navigator.geolocation === "undefined") { navigator.geolocation = new Geolocation(); }
 
 /**
  * Starts the GPS of the device
@@ -134,14 +135,15 @@ Geolocation.prototype.stop = function() {
 	} else {
 		PhoneGap.exec("location", ["stop"]);
 	}
-}
+};
 
 /**
  * Maps current location
  */
-if (typeof navigator.map == "undefined") navigator.map = {};
+if (typeof navigator.map === "undefined") { navigator.map = {}; }
+
 navigator.map.show = function() {
-	if (navigator.geolocation.lastPosition == null) {
+	if (navigator.geolocation.lastPosition === null) {
 		alert("[PhoneGap] No position to map yet.");
 		return;
 	} else {

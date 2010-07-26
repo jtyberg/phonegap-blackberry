@@ -151,7 +151,7 @@ public class GeoLocationCommand implements Command {
 	/**
      * Implementation of the LocationListener interface
      */
-	private class LocationListenerImpl implements LocationListener {
+	private static class LocationListenerImpl implements LocationListener {
 
 		private GeoLocationCommand command;
 

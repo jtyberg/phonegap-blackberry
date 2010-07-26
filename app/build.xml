@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="build-common" default="build">
+<project name="app" default="help">
 	<taskdef resource="bb-ant-defs.xml" />
 
 	<!-- import project properties (project basedir is searched) -->
@@ -18,7 +18,7 @@
 		<fileset dir="${build.dir}/www" />
 	</path>
 
-	<target name="build">
+	<target name="build" depends="clean">
 		<!-- phonegap.js ... wtf -->
 		<!-- Copy over the PhoneGapBlackBerryLibrary -->
 		<mkdir dir="${build.dir}/lib" />
@@ -39,7 +39,7 @@
 	</target>
 
 	<target name="clean">
-		<delete dir="build" />
+		<delete dir="${build.dir}" />
 	</target>
 
 	<target name="sign" depends="build">
@@ -47,7 +47,27 @@
 		<delete file="LogFile.txt" />
 	</target>
 
-	<target name="load-device" depends="sign">
+	<target name="clean-device">
+		<exec executable="${jde.home}/bin/JavaLoader.exe">
+			<arg value="-usb" />
+			<arg value="erase" />
+			<arg value="-f" />
+			<arg value="PhoneGapBlackBerryLib.cod" />
+		</exec>
+		<exec executable="${jde.home}/bin/JavaLoader.exe">
+			<arg value="-usb" />
+			<arg value="erase" />
+			<arg value="-f" />
+			<arg value="${project.output}.cod" />
+		</exec>
+	</target>
+
+	<target name="load-device" depends="sign,clean-device">
+		<exec executable="${jde.home}/bin/JavaLoader.exe">
+			<arg value="-usb" />
+			<arg value="load" />
+			<arg file="lib/PhoneGapBlackBerryLib.cod" />
+		</exec>
 		<exec executable="${jde.home}/bin/JavaLoader.exe">
 			<arg value="-usb" />
 			<arg value="load" />
@@ -60,12 +80,25 @@
 			<fileset dir="build/lib" includes="*.*" />
 			<fileset dir="build" includes="*.cod,*.csl,*.cso,*.debug,*.jar" />
 		</copy>
-		
+
 		<exec executable="${mds.home}/run.bat" dir="${mds.home}" spawn="true"></exec>
 		<exec executable="${simulator.home}/defaultSimulator.bat" dir="${simulator.home}" spawn="true"></exec>
 	</target>
 
 	<target name="clean-simulator">
 		<exec executable="${simulator.home}/clean.bat" dir="${simulator.home}"></exec>
+	</target>
+
+	<target name="help">
+		<echo>
+Targets available in this ant build.xml file are:
+build ................. Builds the application
+sign .................. Signs the application so that it can be deployed to a device
+load-device ........... Puts the application onto the connected device
+load-simulator ........ Puts the application onto the default device simulator
+clean ................. Deletes remnants of previous builds
+clean-simulator ....... Deletes old apps on the simulator (it takes a while)
+clean-device .......... Deletes old apps on the connected device
+		</echo>
 	</target>
 </project>

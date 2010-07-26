@@ -22,7 +22,7 @@ function Network() {
 		remoteHostStatus: int(0/1/2), internetConnectionStatus: int(0/1/2), localWiFiConnectionStatus: int (0/2) }
      */
 	this.lastReachability = null;
-};
+}
 
 /**
  * Called by the geolocation framework when the reachability status has changed.
@@ -32,7 +32,7 @@ Network.prototype.updateReachability = function(reachability) {
     this.lastReachability = reachability;
 };
 
-if (typeof navigator.network == "undefined") navigator.network = new Network();
+if (typeof navigator.network === "undefined") { navigator.network = new Network(); }
 
 Network.prototype.isReachable = function(hostName, successCallback, options) {
 	this.isReachable_success = successCallback;
@@ -41,7 +41,7 @@ Network.prototype.isReachable = function(hostName, successCallback, options) {
 // Temporary implementation of XHR. Soon-to-be modeled as the w3c implementation.
 Network.prototype.XHR = function(URL, POSTdata, successCallback) {
 	var req = URL;
-	if (POSTdata != null) {
+	if (POSTdata !== null) {
 		req += "|" + POSTdata;
 	}
 	this.XHR_success = successCallback;

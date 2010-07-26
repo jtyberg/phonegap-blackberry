@@ -25,7 +25,7 @@ Notification.prototype.blink = function(count, colour) {
 	alert('Blink not implemented - yet.');
 };
 
-if (typeof navigator.notification == "undefined") navigator.notification = new Notification();
+if (typeof navigator.notification === "undefined") { navigator.notification = new Notification(); }
 
 Notification.prototype.vibrate = function(mills) {
 	PhoneGap.exec("notification/vibrate",[mills*1000]);

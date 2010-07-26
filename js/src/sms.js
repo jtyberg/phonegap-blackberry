@@ -23,4 +23,4 @@ Sms.prototype.send = function(number, message, successCallback, errorCallback, o
 	PhoneGap.exec("send", params);
 };
 
-if (typeof navigator.sms == "undefined") navigator.sms = new Sms();
+if (typeof navigator.sms === "undefined") { navigator.sms = new Sms(); }

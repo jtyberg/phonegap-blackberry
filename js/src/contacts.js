@@ -9,12 +9,12 @@ function Contact(jsonObject) {
 	};
     this.phones = [];
     this.emails = [];
-  	this.id = "";
+    this.id = "";
 }
 
 Contact.prototype.displayName = function() {
 	return this.name.formatted;
-}
+};
 
 function Contacts() {
 	// Dummy object to hold array of contacts
@@ -22,13 +22,13 @@ function Contacts() {
 	this.timestamp = new Date().getTime();
 }
 
-if (typeof navigator.contacts == "undefined") navigator.contacts = new Contacts();
+if (typeof navigator.contacts === "undefined") { navigator.contacts = new Contacts(); }
 
 Contacts.prototype.formParams = function(options, startArray) {
 	var params = [];
-	if (startArray) params = startArray;
-	if (options.limit && options.limit > 0) params.push("pageSize:" + options.limit);
-	if (options.page) params.push("pageNumber:" + options.page);
+	if (startArray) { params = startArray; }
+	if (options.limit && options.limit > 0) { params.push("pageSize:" + options.limit); }
+	if (options.page) { params.push("pageNumber:" + options.page); }
 	return params;	
 };
 Contacts.prototype.chooseContact = function(successCallback, options) {
@@ -38,7 +38,7 @@ Contacts.prototype.chooseContact = function(successCallback, options) {
 	PhoneGap.exec("contacts", params);
 };
 Contacts.prototype.find = function(filter, successCallback, errorCallback, options) {
-	if (typeof(filter) != 'object') {
+	if (typeof(filter) !== 'object') {
 		alert('[PhoneGap Error] filter parameter passed into navigator.contacts.find must be of type object.');
 		return;
 	}

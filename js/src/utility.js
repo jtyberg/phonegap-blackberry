@@ -1,6 +1,4 @@
-function Utility() {
-	
-};
+function Utility() { }
 
 /**
  * Closes the application.
@@ -8,6 +6,6 @@ function Utility() {
 Utility.prototype.exit = function() {
 	var params = [];
 	PhoneGap.exec("exit", params);
-}
+};
 
-if (typeof navigator.utility == "undefined") navigator.utility = new Utility();
+if (typeof navigator.utility === "undefined") { navigator.utility = new Utility(); }

@@ -20,14 +20,13 @@ function Orientation() {
  
 Orientation.prototype.setOrientation = function(orientation) {
 	alert('Orientation not implemented - yet.');
-	/*
     Orientation.currentOrientation = orientation;
     var e = document.createEvent('Events');
     e.initEvent('orientationChanged', 'false', 'false');
     e.orientation = orientation;
     document.dispatchEvent(e);
-
 };
+*/
 
 /**
  * Asynchronously aquires the current orientation.
@@ -41,6 +40,7 @@ Orientation.prototype.getCurrentOrientation = function(successCallback, errorCal
 	// If the position is available then call success
 	// If the position is not available then call error
 };
+*/
 
 /**
  * Asynchronously aquires the orientation repeatedly at a given interval.
@@ -57,6 +57,7 @@ Orientation.prototype.watchOrientation = function(successCallback, errorCallback
 		navigator.orientation.getCurrentOrientation(successCallback, errorCallback);
 	}, 10000);
 };
+*/
 
 /**
  * Clears the specified orientation watch.
@@ -66,4 +67,5 @@ Orientation.prototype.clearWatch = function(watchId) {
 	clearInterval(watchId);
 };
 */
-if (typeof navigator.orientation == "undefined") navigator.orientation = new Orientation();
+
+if (typeof navigator.orientation === "undefined") { navigator.orientation = new Orientation(); }

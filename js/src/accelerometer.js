@@ -18,10 +18,11 @@ function Accelerometer() {
  * getting the acceleration data.
  * @param {AccelerationOptions} options The options for getting the accelerometer data
  * such as timeout.
- 
+
 Accelerometer.prototype.getCurrentAcceleration = function(successCallback, errorCallback, options) {
 	alert('Accelerometer not supported in PhoneGap BlackBerry - yet.');
 };
+*/
 
 /**
  * Asynchronously aquires the acceleration repeatedly at a given interval.
@@ -36,11 +37,12 @@ Accelerometer.prototype.getCurrentAcceleration = function(successCallback, error
 Accelerometer.prototype.watchAcceleration = function(successCallback, errorCallback, options) {
 	this.getCurrentAcceleration(successCallback, errorCallback, options);
 	// TODO: add the interval id to a list so we can clear all watches
- 	var frequency = (options != undefined)? options.frequency : 10000;
+	var frequency = (options !== undefined)? options.frequency : 10000;
 	return setInterval(function() {
 		navigator.accelerometer.getCurrentAcceleration(successCallback, errorCallback, options);
 	}, frequency);
 }
+*/
 
 /**
  * Clears the specified accelerometer watch.
@@ -50,4 +52,4 @@ Accelerometer.prototype.clearWatch = function(watchId) {
 	clearInterval(watchId);
 }
 */
-if (typeof navigator.accelerometer == "undefined") navigator.accelerometer = new Accelerometer();
+if (typeof navigator.accelerometer === "undefined") { navigator.accelerometer = new Accelerometer(); }

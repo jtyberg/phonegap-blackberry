@@ -12,7 +12,7 @@ function Compass() {
 		onHeadingChanged: [],
         onError:           []
     };
-};
+}
 
 /**
  * Asynchronously aquires the current heading.
@@ -24,11 +24,11 @@ function Compass() {
  * such as timeout.
  */
 Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, options) {
-	if (this.lastHeading == null) {
+	if (this.lastHeading === null) {
 		this.start(options);
 	}
 	else 
-	if (typeof successCallback == "function") {
+	if (typeof successCallback === "function") {
 		successCallback(this.lastHeading);
 	}
 };
@@ -45,13 +45,13 @@ Compass.prototype.getCurrentHeading = function(successCallback, errorCallback, o
 Compass.prototype.watchHeading= function(successCallback, errorCallback, options) {
 	// Invoke the appropriate callback with a new Position object every time the implementation 
 	// determines that the position of the hosting device has changed. 
+	var frequency = 100, self;
 	
 	this.getCurrentHeading(successCallback, errorCallback, options);
-	var frequency = 100;
-    if (typeof(options) == 'object' && options.frequency)
+    if (typeof(options) === 'object' && options.frequency) {
         frequency = options.frequency;
+	}
 
-	var self = this;
 	return setInterval(function() {
 		self.getCurrentHeading(successCallback, errorCallback, options);
 	}, frequency);
@@ -72,10 +72,10 @@ Compass.prototype.clearWatch = function(watchId) {
  * @param {HeadingOptions} position The current heading.
  */
 Compass.prototype.setHeading = function(heading) {
+	var i = 0;
     this.lastHeading = heading;
-    for (var i = 0; i < this.callbacks.onHeadingChanged.length; i++) {
-        var f = this.callbacks.onHeadingChanged.shift();
-        f(heading);
+    for (; i < this.callbacks.onHeadingChanged.length; i++) {
+        this.callbacks.onHeadingChanged.shift()(heading);
     }
 };
 
@@ -84,14 +84,14 @@ Compass.prototype.setHeading = function(heading) {
  * @param {String} message The text of the error message.
  */
 Compass.prototype.setError = function(message) {
+    var i = 0;
     this.lastError = message;
-    for (var i = 0; i < this.callbacks.onError.length; i++) {
-        var f = this.callbacks.onError.shift();
-        f(message);
+    for (; i < this.callbacks.onError.length; i++) {
+        this.callbacks.onError.shift()(message);
     }
 };
 
-if (typeof navigator.compass == "undefined") navigator.compass = new Compass();
+if (typeof navigator.compass === "undefined") { navigator.compass = new Compass(); }
 
 Compass.prototype.start = function(args) {
     alert('Compass support not implemented - yet.');

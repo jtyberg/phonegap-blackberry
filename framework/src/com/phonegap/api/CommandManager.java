@@ -22,6 +22,8 @@
  */
 package com.phonegap.api;
 
+import net.rim.device.api.system.EventLogger;
+
 import com.phonegap.PhoneGap;
 import com.phonegap.api.impl.CameraCommand;
 import com.phonegap.api.impl.ContactsCommand;

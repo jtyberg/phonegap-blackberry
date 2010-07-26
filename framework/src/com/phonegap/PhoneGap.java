@@ -421,7 +421,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
     		});
     	}
     }
-    private class PhoneGapKeyListener implements KeyListener {
+    private static class PhoneGapKeyListener implements KeyListener {
     	private PhoneGap phoneGap;
     	public PhoneGapKeyListener(PhoneGap pg) {
     		phoneGap = pg;

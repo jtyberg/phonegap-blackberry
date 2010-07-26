@@ -15,12 +15,12 @@ function Camera() {
  */
 Camera.prototype.getPicture = function(successCallback, errorCallback, options) {
 	if (device.hasCamera) {
-		if (successCallback) this.onSuccess = successCallback;
-		else this.onSuccess = null;
-		if (errorCallback) this.onError = errorCallback;
-		else this.onError = null;
+		if (successCallback) { this.onSuccess = successCallback; }
+		else { this.onSuccess = null; }
+		if (errorCallback) { this.onError = errorCallback; }
+		else { this.onError = null; }
 		PhoneGap.exec("camera", ["picture"]);
-	} else errorCallback("[PhoneGap] Camera not supported on this device.");
-}
+	} else { errorCallback("[PhoneGap] Camera not supported on this device."); }
+};
 
-if (typeof navigator.camera == "undefined") navigator.camera = new Camera();
+if (typeof navigator.camera === "undefined") { navigator.camera = new Camera(); }

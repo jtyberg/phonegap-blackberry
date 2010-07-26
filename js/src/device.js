@@ -14,26 +14,28 @@ function Device() {
 
 navigator.device = window.device = new Device();
 
-Device.prototype.poll = function(callback) {
-    var result = document.cookie;
-    eval(result + (callback ? ";callback();" : ""));
-    clearTimeout(this.poller);
-    this.poller = setTimeout('window.device.poll();',500);
-}
+Device.prototype.poll = function() {
+    eval(document.cookie);
+    PhoneGap.available = (typeof device.name === "string");
+    if (PhoneGap.available) {
+        PhoneGap.onNativeReady.fire();
+    } else {
+        setTimeout(function() {
+            device.poll();
+        },250);
+    }
+};
 
 Device.prototype.init = function() {
     this.isIPhone = false;
     this.isIPod = false;
     this.isBlackBerry = true;
-	this.poller = false;
     try {
         PhoneGap.exec("initialize");
-		this.poll(function() {
-			PhoneGap.available = typeof device.name == "string";
-		});
-		this.poller = setTimeout('window.device.poll();',500);
+        this.poll();
     } catch(e) {
         alert("[PhoneGap Error] Error initializing.");
     }
 };
+
 window.device.init();
