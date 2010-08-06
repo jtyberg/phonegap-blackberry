@@ -36,7 +36,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 import javax.microedition.io.InputConnection;
 
-import com.twmacinta.util.MD5;
+import com.phonegap.util.MD5;
 
 import net.rim.blackberry.api.browser.Browser;
 import net.rim.blackberry.api.browser.BrowserSession;
@@ -301,7 +301,7 @@ public final class ConnectionManager {
 			outputHttp = (HttpConnection) outputCon;
 			outputCon = null;
 			// Add the Base64 encoded resource to the directory reference hash, after MD5 hashing the key.
-			String outMD5 = ConnectionManager.MD5hash(outString);
+			String outMD5 = MD5.hash(outString);
 			outString = null;
 			if (!dirHash.containsKey(outMD5)) {
 				dirHash.put(outMD5, directory);
@@ -349,7 +349,7 @@ public final class ConnectionManager {
 		}
 		// Check whether the referrer has already been processed (ignore if URL uses an absolute path reference).
 		if (referrer != null && !dataUrl.startsWith("/")) {
-			String MD5key = ConnectionManager.MD5hash(referrer);
+			String MD5key = MD5.hash(referrer);
 			if (dirHash.containsKey(MD5key)) {
 				String referrerDirectory = ((String) dirHash.get(MD5key));
 				dataUrl = referrerDirectory + dataUrl;
@@ -373,13 +373,4 @@ public final class ConnectionManager {
 		}
 		return bytes.toByteArray();
     }
-	public static String MD5hash(String input) {
-		byte plain[] = input.getBytes();
-		// create MD5 object
-		MD5 md5 = new MD5(plain);
-		//get the resulting hashed byte
-		byte[] result = md5.doFinal();
-		//convert the hashed byte into hexadecimal character for display
-		return MD5.toHex(result);
-	}
 }

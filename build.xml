@@ -57,7 +57,11 @@
 	
 	<target name="check-javascript" depends="build-javascript">
 		<delete dir="${basedir}/js/lib/phonegap-lint.js"/>
-		<echo file="${basedir}/js/lib/lint.js">var alert=function(){},device={},Element={};</echo>
+		<echo file="${basedir}/js/lib/lint.js">
+/*jslint browser: true, evil: true, forin: true, onevar: true, undef: true, nomen: true, eqeqeq: true, maxerr: 1000, maxlen: 80 */
+
+var alert=function(){},device={},Element={};
+		</echo>
 		<concat destfile="${basedir}/js/lib/phonegap-lint.js" append="true">
 			<fileset dir="${basedir}/js/lib">
 				<include name="lint.js" />
@@ -142,15 +146,29 @@ type=cldc
 		</echo>
 		
 		<copy file="${app.resources.dir}/build.xml" tofile="${output.dir}/build.xml" />
-
-		<!--
-		- create an eclipse project with PhoneGapBlackBerryLib.jar in the build path
-		-->
 		
 		<echo>Your PhoneGapBlackBerry app has been generated in ${output.dir}.</echo>
 
 	</target>
 	
+	<!-- ant test -Dapp.name=PhoneGapTest -Doutput.dir=PhoneGapTest -Dpackage=com.phonegaptest -->
+	<target name="test" depends="">
+		<!--
+		get the latest mobile-spec from repo
+		create a new project
+		-->
+	</target>
+	
+	<target name="update" depends="build-javascript,build">
+		<property name="output.dir" location="MyApp" />
+
+		<copy todir="${output.dir}/lib" overwrite="true">
+			<fileset dir="${framework.dir}/build" includes="*.cod,*.cso,*.debug,*.jad,*.jar,*.csl,*.rapc"  />
+		</copy>
+
+		<copy todir="${output.dir}/www" file="${js.dir}/lib/phonegap.js" overwrite="true"/>
+	</target>
+
 	<target name="help">
 		<echo>
 Targets available in this ant build.xml file are:
@@ -159,7 +177,10 @@ build-javascript ...... Builds the phonegap.js file for BlackBerry
 clean ................. Deletes remnants of previous builds
 clean-simulator ....... Deletes old apps on the simulator (it takes a while)
 create ................ Creates a new basic BlackBerry application that depends on the PhoneGapBlackBerryLib
-               Options: app.name, output.dir, package
+			   Options: app.name, output.dir, package
+update ................ Updates a BlackBerry application with a fresh PhoneGapBlackBerryLib and PhoneGap.js
+			   Options: output.dir
 		</echo>
 	</target>
+
 </project>

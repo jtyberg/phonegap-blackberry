@@ -56,10 +56,16 @@ public class StoreCommand implements Command {
 			// Just keep the stock one for now if something fucked up.
 		}
 	}
-	
+
+	/**
+	 * Determines whether the specified instruction is accepted by the command. 
+	 * @param instruction The string instruction passed from JavaScript via cookie.
+	 * @return true if the Command accepts the instruction, false otherwise.
+	 */
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);
 	}
+	
 	private int getCommand(String instruction) {
 		String command = instruction.substring(CODE.length()+1);
 		if (command.startsWith("save")) return SAVE_COMMAND;

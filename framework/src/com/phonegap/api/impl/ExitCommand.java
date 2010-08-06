@@ -33,11 +33,16 @@ import com.phonegap.api.Command;
 public class ExitCommand implements Command {
 
 	private static final String CODE = "PhoneGap=exit"; 
-
+	
+	/**
+	 * Determines whether the specified instruction is accepted by the command. 
+	 * @param instruction The string instruction passed from JavaScript via cookie.
+	 * @return true if the Command accepts the instruction, false otherwise.
+	 */
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);
 	}
-
+	
 	/**
 	 * Invokes internal phone application.
 	 */

@@ -11,6 +11,12 @@ var PhoneGap = {
     }
 };
 
+PhoneGap.callbackId = 0;
+/**
+ * Every call to execAsync pushes a handler into the callbacks, keyed
+ * on the class name + callbackId
+ */
+PhoneGap.callbacks = {};
 
 /**
  * Execute a PhoneGap command in a queued fashion, to ensure commands do not
@@ -42,7 +48,36 @@ PhoneGap.exec = function() {
 	document.cookie = command;
 };
 
+/**
+ * Executes native code asynchonously
+ * @param {Function} success The function to be called when the async task 
+ * completes successfully.
+ * @param {Function} fail The function to be called when an error occurs in 
+ * the async task.
+ * @param {String} clazz The fully qualified class name of the class to call.
+ * @param {String} action The the method to call on the class.
+ * @param {Object} args The arguments to pass to the method.
+ */
+PhoneGap.execAsync = function(success, fail, clazz, action, args) {
+    var callbackId = clazz + PhoneGap.callbackId++;
+    PhoneGap.callbacks[callbackId] = {success:success, fail:fail};
+    document.cookie = JSON.stringify( { 
+        clazz:clazz, action:action, callbackId:callbackId, args:args, async:true 
+    } );
+};
 
+PhoneGap.callbackSuccess = function(callbackId, args) {
+alert('callbackSuccess');
+    PhoneGap.callbacks[callbackId].success(args);
+    delete PhoneGap.callbacks[callbackId];
+};
+
+PhoneGap.callbackError = function(callbackId, args) {
+alert('callbackError');
+
+    PhoneGap.callbacks[callbackId].fail(args);
+    delete PhoneGap.callbacks[callbackId];
+};
 
 /**
  * Custom pub-sub channel that can have functions subscribed to it
@@ -140,15 +175,34 @@ PhoneGap.Channel.join = function(h, c) {
 }
 
 
+/**
+ * onDOMContentLoaded channel is fired when the DOM content 
+ * of the page has been parsed.
+ */
+PhoneGap.onDOMContentLoaded = new PhoneGap.Channel();
+
+/**
+ * onNativeReady channel is fired when the PhoneGap native code
+ * has been initialized.
+ */
+PhoneGap.onNativeReady = new PhoneGap.Channel();
+
+/**
+ * onDeviceReady is fired only after both onDOMContentLoaded and 
+ * onNativeReady have fired.
+ */
+PhoneGap.onDeviceReady = new PhoneGap.Channel();
+
+
 // Compatibility stuff so that we can use addEventListener('deviceready')
 // and addEventListener('touchstart')
 PhoneGap.m_document_addEventListener = document.addEventListener;
 
 document.addEventListener = function(evt, handler, capture) {
     if (evt === 'deviceready') {
-        PhoneGap.onDeviceReady.sub(handler);
+        PhoneGap.onDeviceReady.subscribeOnce(handler);
     } else {
-        PhoneGap.m_document_addEventListener(evt, handler, capture);
+        PhoneGap.m_document_addEventListener.call(document, evt, handler, capture);
     }
 };
 
@@ -165,29 +219,10 @@ Element.prototype.addEventListener = function(evt, handler, capture) {
     PhoneGap.m_element_addEventListener.call(this, evt, handler, capture);
 };
 
-
-/**
- * onDOMContentLoaded channel is fired when the DOM content 
- * of the page has been parsed.
- */
-PhoneGap.onDOMContentLoaded = new PhoneGap.Channel();
-
-/**
- * onNativeReady channel is fired when the PhoneGap native code
- * has been initialized.
- */
-PhoneGap.onNativeReady = new PhoneGap.Channel();
-
 // _nativeReady is global variable that the native side can set
 // to signify that the native code is ready. It is a global since 
 // it may be called before any PhoneGap JS is ready.
-if (_nativeReady) { PhoneGap.onNativeReady.fire(); }
-
-/**
- * onDeviceReady is fired only after both onDOMContentLoaded and 
- * onNativeReady have fired.
- */
-PhoneGap.onDeviceReady = new PhoneGap.Channel();
+if (typeof _nativeReady !== 'undefined') { PhoneGap.onNativeReady.fire(); }
 
 PhoneGap.Channel.join(function() {
     PhoneGap.onDeviceReady.fire();

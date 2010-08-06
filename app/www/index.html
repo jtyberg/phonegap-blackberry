@@ -49,9 +49,12 @@
 			var fail = function() { alert('getAll failed o noes.'); };
 			navigator.store.getAll(win,fail);
 		}
+
+        document.addEventListener('deviceready', deviceInfo, false);
+
     </script>
   </head>
-  <body id="stage" class="theme" onload="deviceInfo();">
+  <body id="stage" class="theme">
       <div id="Page1">
         <h2>this file is located at /www/index.html</h2>
         <div id="info" class="Panel">

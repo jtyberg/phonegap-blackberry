@@ -26,11 +26,15 @@ import com.phonegap.api.Command;
 
 public class OrientationCommand implements Command {
 
+	/**
+	 * Determines whether the specified instruction is accepted by the command. 
+	 * @param instruction The string instruction passed from JavaScript via cookie.
+	 * @return true if the Command accepts the instruction, false otherwise.
+	 */
 	public boolean accept(String instruction) {
-		// TODO Auto-generated method stub
 		return false;
 	}
-
+	
 	public String execute(String instruction) {
 		// TODO Auto-generated method stub
 		return null;

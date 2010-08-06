@@ -105,10 +105,16 @@ public class CameraCommand implements Command {
 			}
 		};
 	}
+
+	/**
+	 * Determines whether the specified instruction is accepted by the command. 
+	 * @param instruction The string instruction passed from JavaScript via cookie.
+	 * @return true if the Command accepts the instruction, false otherwise.
+	 */
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);
 	}
-
+	
 	/**
 	 * Invokes internal camera application.
 	 */
@@ -140,5 +146,4 @@ public class CameraCommand implements Command {
             // Don't allow key injection - figure out what to do
         }
 	}
-
 }

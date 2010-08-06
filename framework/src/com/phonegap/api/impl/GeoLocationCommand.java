@@ -74,6 +74,7 @@ public class GeoLocationCommand implements Command {
 			locationProvider = null;
 		}
 	}
+
 	/**
 	 * Determines whether the specified instruction is accepted by the command. 
 	 * @param instruction The string instruction passed from JavaScript via cookie.
@@ -82,7 +83,7 @@ public class GeoLocationCommand implements Command {
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);
 	}
-
+	
 	/**
 	 * Deletes the last valid obtained position.
 	 */

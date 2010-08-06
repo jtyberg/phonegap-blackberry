@@ -15,15 +15,17 @@ function Device() {
 navigator.device = window.device = new Device();
 
 Device.prototype.poll = function() {
-    eval(document.cookie);
-    PhoneGap.available = (typeof device.name === "string");
-    if (PhoneGap.available) {
-        PhoneGap.onNativeReady.fire();
-    } else {
-        setTimeout(function() {
-            device.poll();
-        },250);
+    var cookie = document.cookie;
+    if (cookie != '') {
+        eval(cookie);
+        PhoneGap.available = (typeof device.name === "string");
+        if (PhoneGap.available) {
+            PhoneGap.onNativeReady.fire();
+        }
     }
+    setTimeout(function() {
+        device.poll();
+    },250);
 };
 
 Device.prototype.init = function() {

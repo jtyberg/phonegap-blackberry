@@ -36,15 +36,15 @@ public class DeviceCommand implements Command {
 
 	private static final String CODE = "PhoneGap=initialize";
 	private static final String EMULATOR = "Emulator";
-	private static final String DEVICE_NAME = ";device.name = '";
-	private static final String DEVICE_FLASH = "';device.flash = ";
-	private static final String DEVICE_PLATFORM = ";device.platform = '";
-	private static final String DEVICE_VENDOR = "';device.vendor = '";
-	private static final String DEVICE_BATTERY = "';device.battery = ";
-	private static final String DEVICE_VERSION = ";device.version = '";
-	private static final String DEVICE_SIMULATOR = "';device.isSimulator = ";
-	private static final String DEVICE_CAMERA = ";device.hasCamera = ";
-	private static final String DEVICE_UUID = ";device.uuid = ";
+	private static final String DEVICE_NAME = "navigator.device.name = '";
+	private static final String DEVICE_FLASH = "';navigator.device.flash = ";
+	private static final String DEVICE_PLATFORM = ";navigator.device.platform = '";
+	private static final String DEVICE_VENDOR = "';navigator.device.vendor = '";
+	private static final String DEVICE_BATTERY = "';navigator.device.battery = ";
+	private static final String DEVICE_VERSION = ";navigator.device.version = '";
+	private static final String DEVICE_SIMULATOR = "';navigator.device.isSimulator = ";
+	private static final String DEVICE_CAMERA = ";navigator.device.hasCamera = ";
+	private static final String DEVICE_UUID = ";navigator.device.uuid = ";
 	private static final String SEMI_COLON = ";";
 
 	/**
@@ -55,7 +55,7 @@ public class DeviceCommand implements Command {
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);
 	}
-
+	
 	/**
 	 * Fills the JS variable 'device' with:
 	 *   Model
@@ -71,7 +71,7 @@ public class DeviceCommand implements Command {
 	 */
 	public String execute(String instruction) {
 		StringBuffer deviceInfo = new StringBuffer(DEVICE_NAME);
-		deviceInfo.append(DeviceInfo.getDeviceName()).append(DEVICE_FLASH);
+		deviceInfo.append(DeviceInfo.getDeviceName()).append("';");
 		deviceInfo.append(DeviceInfo.getTotalFlashSize()).append(DEVICE_PLATFORM);
 		deviceInfo.append(DeviceInfo.getPlatformVersion().length()>0?DeviceInfo.getPlatformVersion():EMULATOR).append(DEVICE_VENDOR);
 		deviceInfo.append(DeviceInfo.getManufacturerName()).append(DEVICE_BATTERY);

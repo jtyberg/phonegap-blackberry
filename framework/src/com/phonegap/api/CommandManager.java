@@ -1,69 +1,46 @@
-/**
- * The MIT License
- * -------------------------------------------------------------
- * Copyright (c) 2008, Rob Ellis, Brock Whitten, Brian Leroux, Joe Bowser, Dave Johnson, Nitobi
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 package com.phonegap.api;
 
-import net.rim.device.api.system.EventLogger;
+import org.json.me.JSONArray;
 
 import com.phonegap.PhoneGap;
-import com.phonegap.api.impl.CameraCommand;
-import com.phonegap.api.impl.ContactsCommand;
-import com.phonegap.api.impl.DeviceCommand;
-import com.phonegap.api.impl.ExitCommand;
-import com.phonegap.api.impl.GeoLocationCommand;
-import com.phonegap.api.impl.MediaCommand;
-import com.phonegap.api.impl.NetworkCommand;
-import com.phonegap.api.impl.NotificationCommand;
-import com.phonegap.api.impl.SMSCommand;
-import com.phonegap.api.impl.StoreCommand;
-import com.phonegap.api.impl.TelephonyCommand;
+import com.phonegap.api.impl.*;
 
 /**
- * Given a execution request detects matching {@link Command} and executes it.
- *
- * @author Jose Noheda
+ * CommandManager is exposed to JavaScript in the PhoneGap WebView.
+ * 
+ * Calling native plugin code can be done by calling CommandManager.exec(...)
+ * from JavaScript.
+ * 
+ * @author davejohnson
  *
  */
 public final class CommandManager {
 	private static final String EXCEPTION_PREFIX = "[PhoneGap] *ERROR* Exception executing command [";
 	private static final String EXCEPTION_SUFFIX = "]: ";
 	
-	private Command[] commands = new Command[11]; 
+	private Command[] commands;
 
-	public CommandManager(PhoneGap phoneGap) {
-		commands[0] = new CameraCommand(phoneGap);
+	private final PhoneGap app;
+	
+	public CommandManager(PhoneGap app) {
+		this.app = app;
+
+		commands = new Command[11];
+		commands[0] = new CameraCommand(app);
 		commands[1] = new ContactsCommand();
 		commands[2] = new NotificationCommand();
 		commands[3] = new TelephonyCommand();
-		commands[4] = new GeoLocationCommand(phoneGap);
+		commands[4] = new GeoLocationCommand(app);
 		commands[5] = new DeviceCommand();	
 		commands[6] = new MediaCommand();
-		commands[7] = new NetworkCommand(phoneGap);
+		commands[7] = new NetworkCommand(app);
 		commands[8] = new SMSCommand();
 		commands[9] = new ExitCommand();
 		commands[10] = new StoreCommand();
 	}
 
 	/**
+	 * DEPRECATED
 	 * Receives a request for execution and fulfills it as long as one of
 	 * the configured {@link Command} can understand it. Command precedence
 	 * is important (just one of them will be executed).
@@ -74,16 +51,106 @@ public final class CommandManager {
 	public String processInstruction(String instruction) {
 		for (int index = 0; index < commands.length; index++) {
 			Command command = (Command) commands[index]; 
-			if (command.accept(instruction))
+			if (command.accept(instruction)) {
 				try {
 					return command.execute(instruction);
 				} catch(Exception e) {
 					System.out.println(EXCEPTION_PREFIX + instruction + EXCEPTION_SUFFIX + e.getMessage());
 				}
+			}
 		}
 		return null;
 	}
+	
+	/**
+	 * Receives a request for execution and fulfills it by finding the appropriate
+	 * Java class and calling it's execute method.
+	 * 
+	 * CommandManager.exec can be used either synchronously or async. In either case, a JSON encoded 
+	 * string is returned that will indicate if any errors have occurred when trying to find
+	 * or execute the class denoted by the clazz argument.
+	 * 
+	 * @param clazz String containing the fully qualified class name. e.g. com.phonegap.FooBar
+	 * @param action String containt the action that the class is supposed to perform. This is
+	 * passed to the plugin execute method and it is up to the plugin developer 
+	 * how to deal with it.
+	 * @param callbackId String containing the id of the callback that is execute in JavaScript if
+	 * this is an async plugin call.
+	 * @param args An Array literal string containing any arguments needed in the
+	 * plugin execute method.
+	 * @param async Boolean indicating whether the calling JavaScript code is expecting an
+	 * immediate return value. If true, either PhoneGap.callbackSuccess(...) or PhoneGap.callbackError(...)
+	 * is called once the plugin code has executed.
+	 * @return JSON encoded string with a response message and status.
+	 */
+	public String exec(final String clazz, final String action, final String callbackId, 
+			final JSONArray args, final boolean async) {
+		CommandResult cr = null;
+		try {
+			Class c = getClassByName(clazz);
+
+			// Create a new instance of the plugin and set the context and webview
+			final PluginCommand plugin = (PluginCommand)c.newInstance();
+			plugin.setContext(this.app);
+			//plugin.setView(this.app);
+
+			if (async) {
+				// Run this async on the UI thread so that JavaScript can continue on
+				Thread thread = new Thread() {
+					public void run() {
+						// Call execute on the plugin so that it can do it's thing
+						final CommandResult cr = plugin.execute(action, args);
+						// Check if the 
+						if (cr.getStatus() == 0) {
+							app.invokeLater(new Runnable() {
+								public void run() {
+									app.loadUrl(cr.toSuccessCallbackString(callbackId));
+								}
+							});
+						} else {
+							app.invokeLater(new Runnable() {
+								public void run() {
+									app.loadUrl(cr.toErrorCallbackString(callbackId));
+								}
+							});
+						}
+					}
+				};
+				thread.start();
+				return "";
+			} else {
+				// Call execute on the plugin so that it can do it's thing
+				cr = plugin.execute(action, args);
+			}
+		} catch (ClassNotFoundException e) {
+			cr = new CommandResult(CommandResult.Status.CLASSNOTFOUNDEXCEPTION, 
+					"{ message: 'ClassNotFoundException', status: "+CommandResult.Status.CLASSNOTFOUNDEXCEPTION.ordinal()+" }");
+		} catch (IllegalAccessException e) {
+			cr = new CommandResult(CommandResult.Status.ILLEGALACCESSEXCEPTION, 
+					"{ message: 'IllegalAccessException', status: "+CommandResult.Status.ILLEGALACCESSEXCEPTION.ordinal()+" }");
+		} catch (InstantiationException e) {
+			cr = new CommandResult(CommandResult.Status.INSTANTIATIONEXCEPTION, 
+					"{ message: 'InstantiationException', status: "+CommandResult.Status.INSTANTIATIONEXCEPTION.ordinal()+" }");
+		}
+		// if async we have already returned at this point unless there was an error...
+		if (async) {
+			app.loadUrl(cr.toErrorCallbackString(callbackId));
+		}
+		return ( cr != null ? cr.getResult() : "{ status: 0, message: 'all good' }" );
+	}
+	
 	public void stopXHR() {
 		((NetworkCommand)commands[7]).stopXHR();
+	}
+	
+	/**
+	 * 
+	 * 
+	 * @param clazz
+	 * @return
+	 * @throws ClassNotFoundException
+	 */
+	private Class getClassByName(final String clazz) throws ClassNotFoundException {
+		return Class.forName(clazz);
 	}
 }

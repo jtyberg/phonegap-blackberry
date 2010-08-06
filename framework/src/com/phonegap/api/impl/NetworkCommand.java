@@ -53,7 +53,7 @@ public class NetworkCommand implements Command {
 		berryGap = gap;
 		connThread.start();
 	}
-	
+
 	/**
 	 * Determines whether the specified instruction is accepted by the command. 
 	 * @param instruction The string instruction passed from JavaScript via cookie.
@@ -62,7 +62,7 @@ public class NetworkCommand implements Command {
 	public boolean accept(String instruction) {
 		return instruction != null && instruction.startsWith(CODE);
 	}
-
+	
 	public String execute(String instruction) {
 		switch (getCommand(instruction)) {
 			case REACHABLE_COMMAND:

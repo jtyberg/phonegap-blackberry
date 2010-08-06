@@ -53,9 +53,12 @@ import net.rim.device.api.ui.component.Status;
 import net.rim.device.api.ui.container.MainScreen;
 
 import com.phonegap.api.CommandManager;
+import com.phonegap.api.CommandResult;
 import com.phonegap.io.ConnectionManager;
 import com.phonegap.io.PrimaryResourceFetchThread;
 import com.phonegap.io.SecondaryResourceFetchThread;
+
+import org.json.me.*;
 
 /**
  * Bridges HTML/JS/CSS to a native Blackberry application.
@@ -212,12 +215,35 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 		case Event.EVENT_SET_HEADER: // No cache support.
 		case Event.EVENT_SET_HTTP_COOKIE:
 			String cookie = ((SetHttpCookieEvent) event).getCookie();
+			
+			// Support the old protocol still
 			if (cookie.startsWith(PHONEGAP_PROTOCOL)) {
 				String response = commandManager.processInstruction(cookie);
 				if ((response != null) && (response.trim().length() > 0)) {
 					pendingResponses.addElement(response);
 				}
 				response = null;
+			} else {
+				// cookie = {clazz:'com.example.Foo', action:'bar', callbackId:'1', args:{...}, async:true};
+				try {
+					JSONObject o = new JSONObject(cookie);
+	
+					JSONArray args = o.getJSONArray("args");
+					String clazz = o.getString("clazz");
+					String action = o.getString("action");
+					String callbackId = o.getString("callbackId");
+					boolean async = o.getBoolean("async");
+
+					String response = commandManager.exec(clazz, action, callbackId, args, async);
+					if ((response != null) && (response.trim().length() > 0)) {
+						pendingResponses.addElement(response);
+					}
+					response = null;
+				} catch (JSONException e) {
+					pendingResponses.addElement(
+						new CommandResult(CommandResult.Status.JSONEXCEPTION, "{message: 'foo'}")
+						.toErrorString());
+				}
 			}
 			cookie = null;
 			break;
@@ -336,10 +362,25 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
         	System.gc();
         }
     }
+    
+    /**
+     * Required for implementing RenderingApplication ... but not used. Use invokeLater instead.
+     */
     public void invokeRunnable(Runnable runnable) 
     {       
         (new Thread(runnable)).start();
     }
+    
+    /**
+     * This is essentially to make the API more like Android.
+     * 
+     * @param javascript
+     */
+    public void loadUrl(String javascript) {
+    	System.out.println(javascript);
+    	pendingResponses.addElement(javascript);
+    }
+    
     /**
      * An analogous function to String.replaceAll from J2SE, but unavailable on Micro. Courtesy of Jijo from http://www.itgalary.com/forum_posts.asp?TID=871
      * @param _text
@@ -396,7 +437,6 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
                 v.addElement(data);
             }
         }
-
         String[] result = new String[v.size()];
         v.copyInto(result);
         v = null;
