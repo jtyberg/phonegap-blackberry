@@ -144,8 +144,10 @@ output=${app.name}
 title=${app.name}
 type=cldc
 		</echo>
-		
+
 		<copy file="${app.resources.dir}/build.xml" tofile="${output.dir}/build.xml" />
+
+		<copy file="${app.resources.dir}/BlackBerry_App_Descriptor.xml" tofile="${output.dir}/BlackBerry_App_Descriptor.xml" />
 		
 		<echo>Your PhoneGapBlackBerry app has been generated in ${output.dir}.</echo>
 
