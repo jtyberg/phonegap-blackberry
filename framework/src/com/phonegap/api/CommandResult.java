@@ -18,11 +18,11 @@ public class CommandResult {
 	}
 	
 	public String toSuccessCallbackString(String callbackId) {
-		return "PhoneGap.callbackSuccess('"+callbackId+"', " + this.getResult()+ ");";
+		return "try { PhoneGap.callbackSuccess('"+callbackId+"', " + this.getResult()+ "); } catch(e) { alert('error in callbackSuccess. probably badly formed callback JSON'); }";
 	}
 	
 	public String toErrorCallbackString(String callbackId) {
-		return "PhoneGap.callbackError('"+callbackId+"', " + this.getResult()+ ");";
+		return "try { PhoneGap.callbackError('"+callbackId+"', " + this.getResult()+ "); } catch(e) { alert('error in callbackError. probably badly formed callback JSON'); }";
 	}
 
 	public String toErrorString() {

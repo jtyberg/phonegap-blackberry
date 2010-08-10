@@ -8,6 +8,9 @@
 	<property file="common.properties" />
 
 	<property name="build.dir" location="build" />
+	<property name="temp.dir" location="temp" />
+	<property name="lib.dir" location="lib" />
+	<property name="dist.dir" location="dist" />
 
 	<path id="import.jars">
 		<fileset dir="build/lib" includes="*.jar" />
@@ -23,7 +26,7 @@
 		<!-- Copy over the PhoneGapBlackBerryLibrary -->
 		<mkdir dir="${build.dir}/lib" />
 		<copy todir="${build.dir}/lib">
-			<fileset dir="lib" includes="**/*" />
+			<fileset dir="${lib.dir}" includes="**/*" />
 		</copy>
 		<!-- Copy over the www stuff since RAPC won't keep folder structure otherwise -->
 		<mkdir dir="${build.dir}/www" />
@@ -40,11 +43,24 @@
 
 	<target name="clean">
 		<delete dir="${build.dir}" />
+		<delete dir="${dest.dir}" />
+		<delete dir="${temp.dir}" />
 	</target>
 
 	<target name="sign" depends="build">
-		<sigtool codfile="build/${project.output}.cod" jdehome="${sigtool.jde}" password="${sigtool.password}" />
+		<sigtool codfile="${build.dir}/${project.output}.cod" jdehome="${sigtool.jde}" password="${sigtool.password}" />
 		<delete file="LogFile.txt" />
+	</target>
+
+	<target name="package" depends="sign">
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${temp.dir}" />
+		<copy todir="${temp.dir}">
+			<fileset dir="${build.dir}" includes="**/*" />
+		</copy>
+		<jadtool input="${temp.dir}/${project.output}.jad" destdir="${dist.dir}">
+			<fileset dir="${temp.dir}" includes="**/*.cod" />
+		</jadtool>
 	</target>
 
 	<target name="clean-device">
@@ -66,19 +82,19 @@
 		<exec executable="${jde.home}/bin/JavaLoader.exe">
 			<arg value="-usb" />
 			<arg value="load" />
-			<arg file="lib/PhoneGapBlackBerryLib.cod" />
+			<arg file="${lib.dir}/PhoneGapBlackBerryLib.cod" />
 		</exec>
 		<exec executable="${jde.home}/bin/JavaLoader.exe">
 			<arg value="-usb" />
 			<arg value="load" />
-			<arg file="build/${project.output}.cod" />
+			<arg file="${build.dir}/${project.output}.cod" />
 		</exec>
 	</target>
 
 	<target name="load-simulator" depends="build">
 		<copy todir="${simulator.home}">
-			<fileset dir="build/lib" includes="*.*" />
-			<fileset dir="build" includes="*.cod,*.csl,*.cso,*.debug,*.jar" />
+			<fileset dir="${build.dir}/lib" includes="*.*" />
+			<fileset dir="${build.dir}" includes="*.cod,*.csl,*.cso,*.debug,*.jar" />
 		</copy>
 
 		<exec executable="${mds.home}/run.bat" dir="${mds.home}" spawn="true"></exec>
@@ -96,6 +112,7 @@ build ................. Builds the application
 sign .................. Signs the application so that it can be deployed to a device
 load-device ........... Puts the application onto the connected device
 load-simulator ........ Puts the application onto the default device simulator
+package ............... Creates a JAD file that includes the PhoneGapBlackBerryLib.cod
 clean ................. Deletes remnants of previous builds
 clean-simulator ....... Deletes old apps on the simulator (it takes a while)
 clean-device .......... Deletes old apps on the connected device

@@ -95,25 +95,23 @@ public final class CommandManager {
 			//plugin.setView(this.app);
 
 			if (async) {
-				// Run this async on the UI thread so that JavaScript can continue on
+				// Run this async on a background thread so that JavaScript can continue on
 				Thread thread = new Thread() {
 					public void run() {
 						// Call execute on the plugin so that it can do it's thing
 						final CommandResult cr = plugin.execute(action, args);
-						// Check if the 
-						if (cr.getStatus() == 0) {
-							app.invokeLater(new Runnable() {
-								public void run() {
+						// Run this async on the UI thread
+						// Not sure if we really have to do this ...
+						app.invokeLater(new Runnable() {
+							public void run() {
+								// Check if the 
+								if (cr.getStatus() == 0) {
 									app.loadUrl(cr.toSuccessCallbackString(callbackId));
-								}
-							});
-						} else {
-							app.invokeLater(new Runnable() {
-								public void run() {
+								} else {
 									app.loadUrl(cr.toErrorCallbackString(callbackId));
 								}
-							});
-						}
+							}
+						});
 					}
 				};
 				thread.start();
