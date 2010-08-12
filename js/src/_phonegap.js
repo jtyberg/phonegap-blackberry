@@ -11,6 +11,19 @@ var PhoneGap = {
     }
 };
 
+/**
+ * Adds a plugin object to window.plugins
+ */
+PhoneGap.addPlugin = function(name, obj) {
+	if ( !window.plugins ) {
+		window.plugins = {};
+	}
+
+	if ( !window.plugins[name] ) {
+		window.plugins[name] = obj;
+	}
+}
+
 PhoneGap.callbackId = 0;
 /**
  * Every call to execAsync pushes a handler into the callbacks, keyed
@@ -67,14 +80,11 @@ PhoneGap.execAsync = function(success, fail, clazz, action, args) {
 };
 
 PhoneGap.callbackSuccess = function(callbackId, args) {
-alert('callbackSuccess');
     PhoneGap.callbacks[callbackId].success(args);
     delete PhoneGap.callbacks[callbackId];
 };
 
 PhoneGap.callbackError = function(callbackId, args) {
-alert('callbackError');
-
     PhoneGap.callbacks[callbackId].fail(args);
     delete PhoneGap.callbacks[callbackId];
 };

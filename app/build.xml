@@ -11,6 +11,7 @@
 	<property name="temp.dir" location="temp" />
 	<property name="lib.dir" location="lib" />
 	<property name="dist.dir" location="dist" />
+	<property name="www.dir" location="www" />
 
 	<path id="import.jars">
 		<fileset dir="build/lib" includes="*.jar" />
@@ -18,7 +19,7 @@
 
 	<path id="src.files">
 		<fileset dir="src" />
-		<fileset dir="${build.dir}/www" />
+		<fileset dir="${build.dir}/${www.dir}" />
 	</path>
 
 	<target name="build" depends="clean">
@@ -31,7 +32,7 @@
 		<!-- Copy over the www stuff since RAPC won't keep folder structure otherwise -->
 		<mkdir dir="${build.dir}/www" />
 		<copy todir="${build.dir}/www">
-			<fileset dir="www" includes="**/*" />
+			<fileset dir="${www.dir}" includes="**/*" />
 		</copy>
 		<rapc output="${project.output}" destdir="${build.dir}" generatesourcelist="true">
 			<import refid="import.jars" />
@@ -103,6 +104,10 @@
 
 	<target name="clean-simulator">
 		<exec executable="${simulator.home}/clean.bat" dir="${simulator.home}"></exec>
+		
+		<delete>
+			<fileset dir="${simulator.home}" includes="*.cod,*.csl,*.cso,*.debug,*.jar" />
+		</delete>
 	</target>
 
 	<target name="help">
