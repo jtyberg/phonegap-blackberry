@@ -270,7 +270,7 @@ public final class ConnectionManager {
 		String dataUrl = URLandDirectory[0];
 		String directory = URLandDirectory[1];
 		// Read internal resource and encode as Base64, then return as HttpConnection object.
-		System.out.println("[PhoneGap] Begin retrieval of internal URL '" + dataUrl + "'");
+		System.out.println("[PhoneGap] Begin retrieval of internal URL '" + dataUrl + "' and DIRECTORY '" + directory + "'");
 		try {
 			// Identify file type and include proper MIME type in data URI.
 			if (dataUrl.endsWith(".html") || dataUrl.endsWith(".htm")) {
@@ -286,9 +286,17 @@ public final class ConnectionManager {
 			} else {
 				output.write(ConnectionManager.DATA_URL_PLAIN);
 			}
+			
 			// Create stream to resource and cast as HttpConnection.
 			boutput = new Base64OutputStream(output);
-			InputStream theResource = Application.class.getResourceAsStream(dataUrl);
+			
+			InputStream theResource = null;
+			if (dataUrl.startsWith("file://")) {
+				theResource = Connector.openInputStream(dataUrl);
+			} else {
+				theResource = Application.class.getResourceAsStream(dataUrl);
+			}
+			
 			byte[] resourceBytes = read(theResource);
 			theResource = null;
 			boutput.write(resourceBytes);
@@ -348,7 +356,7 @@ public final class ConnectionManager {
 			}
 		}
 		// Check whether the referrer has already been processed (ignore if URL uses an absolute path reference).
-		if (referrer != null && !dataUrl.startsWith("/")) {
+		if (referrer != null && !dataUrl.startsWith("/") && !dataUrl.startsWith("file://")) {
 			String MD5key = MD5.hash(referrer);
 			if (dirHash.containsKey(MD5key)) {
 				String referrerDirectory = ((String) dirHash.get(MD5key));
