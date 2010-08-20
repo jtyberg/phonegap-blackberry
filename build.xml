@@ -148,6 +148,7 @@ sigtool.password = YourPassword
 output=${app.name}
 title=${app.name}
 type=cldc
+icon=www/icon.png
 		</echo>
 
 		<copy file="${app.resources.dir}/build.xml" tofile="${output.dir}/build.xml" />
