@@ -32,6 +32,11 @@
 		</rapc>
 		<echo>PhoneGapBlackbBerryLib built to ${framework.build.dir}</echo>
 	</target>
+	
+	<target name="sign" depends="build">
+		<sigtool codfile="${framework.build.dir}/${project.output}.cod" jdehome="${sigtool.jde}" password="${sigtool.password}" />
+		<delete file="LogFile.txt" />
+	</target>
 
 	<target name="clean">
 		<delete dir="${framework.build.dir}"></delete>
@@ -161,7 +166,7 @@ type=cldc
 		-->
 	</target>
 	
-	<target name="update" depends="build-javascript,build">
+	<target name="update" depends="build-javascript,build,sign">
 		<property name="output.dir" location="MyApp" />
 
 		<copy todir="${output.dir}/lib" overwrite="true">
