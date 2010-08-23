@@ -43,7 +43,6 @@ public class NetworkCommand implements Command {
 	private static final int REACHABLE_COMMAND = 0;
 	private static final int XHR_COMMAND = 1;
 	private static final String CODE = "PhoneGap=network";
-	private static final String NETWORK_UNREACHABLE = ";navigator.network.lastReachability = NetworkStatus.NOT_REACHABLE;if (navigator.network.isReachable_success) navigator.network.isReachable_success(NetworkStatus.NOT_REACHABLE);";
 	private static final int NOT_REACHABLE = 0;
 	private static final int REACHABLE_VIA_CARRIER_DATA_NETWORK = 1;
 	private static final int REACHABLE_VIA_WIFI_NETWORK = 2;
@@ -67,21 +66,20 @@ public class NetworkCommand implements Command {
 	public String execute(String instruction) {
 		switch (getCommand(instruction)) {
 			case REACHABLE_COMMAND:
-				if (RadioInfo.isDataServiceOperational()) {
-					// Data services available - determine what service to use.
-					int service = RadioInfo.getNetworkType();
-					int reachability = NOT_REACHABLE;
-					if ((service & RadioInfo.NETWORK_GPRS) != 0 || (service & RadioInfo.NETWORK_UMTS) != 0 ) {
-						reachability = REACHABLE_VIA_CARRIER_DATA_NETWORK;
-					}
-					if ((service & RadioInfo.NETWORK_802_11) != 0) {
-						reachability = REACHABLE_VIA_WIFI_NETWORK;
-					}
-					return ";navigator.network.lastReachability = " + reachability + ";if (navigator.network.isReachable_success) navigator.network.isReachable_success("+reachability+");";
-				} else {
-					// No data services - unreachable.
-					return NETWORK_UNREACHABLE;
+				// Determine the active Wireless Access Families
+				// WiFi will have precedence over carrier data.
+				int service = RadioInfo.getActiveWAFs();
+				int reachability = NOT_REACHABLE;
+				if ((service & RadioInfo.WAF_3GPP) != 0 ||
+						(service & RadioInfo.WAF_CDMA) != 0 ||
+						(service & RadioInfo.WAF_IDEN) != 0) {
+					reachability = REACHABLE_VIA_CARRIER_DATA_NETWORK;
 				}
+				if ((service & RadioInfo.WAF_WLAN) != 0) {
+					reachability = REACHABLE_VIA_WIFI_NETWORK;
+				}
+				return ";navigator.network.lastReachability = " + reachability + ";if (navigator.network.isReachable_success) navigator.network.isReachable_success("+reachability+");";
+				
 			case XHR_COMMAND:
 				String reqURL = instruction.substring(CODE.length()+5);
 				String POSTdata = null;
