@@ -30,6 +30,7 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
 import javax.microedition.io.StreamConnection;
 
+import net.rim.device.api.system.CoverageInfo;
 import net.rim.device.api.system.DeviceInfo;
 import net.rim.device.api.system.RadioInfo;
 import net.rim.device.api.ui.UiApplication;
@@ -92,6 +93,15 @@ public class NetworkCommand implements Command {
 				// Something that is used by the BlackBerry Enterprise Server for the BES Push apps. We want to initiate a direct TCP connection, so this parameter needs to be specified. 
 				if (!DeviceInfo.isSimulator()) {
 					reqURL += ";deviceside=true";
+				}
+				// Check for WIFI connectivity, optionally append the interface=wifi parameter to the end of URL.
+				// If you have data disabled and WIFI enabled, but you cannot access the network, then check that
+				// the device is not configured to connect to a VPN network.
+				// WIFI Connection > WIFI Options > Select the active network > Edit > Set VPN to None
+				if ((RadioInfo.getActiveWAFs() & RadioInfo.WAF_WLAN) != 0) {
+					if (CoverageInfo.isCoverageSufficient(CoverageInfo.COVERAGE_DIRECT, RadioInfo.WAF_WLAN, true)) {
+						reqURL += ";interface=wifi";
+					}
 				}
 				connThread.fetch(reqURL, POSTdata);
 				reqURL = null;
