@@ -78,7 +78,7 @@ public class StoreCommand implements Command {
 
 	public String execute(String instruction) {
 		Hashtable hash = new Hashtable(); // The existing hash that we have in the system.
-		String retVal = "";
+		StringBuffer retVal = new StringBuffer();
 		Object storeObj = null;
 		String key = "";
 		switch (getCommand(instruction)) {
@@ -117,28 +117,31 @@ public class StoreCommand implements Command {
 					if (storeObj != null) {
 						hash = (Hashtable)storeObj;
 						Enumeration e = hash.keys();
-						retVal = "{";
+						retVal.append("{");
 						while (e.hasMoreElements()) {
 							key = (String)e.nextElement();
 							String value = (String)hash.get(key);
 							value = escapeString(value);
-							retVal += "'" + key + "':'" + value + "'";
-							retVal += ",";
+							retVal.append("'");
+							retVal.append(key);
+							retVal.append("':'");
+							retVal.append(value);
+							retVal.append("',");
 							value = null;
 						}
-						if (retVal.length() > 1) retVal = retVal.substring(0, retVal.length()-1);
-						retVal += "}";
+						if (retVal.length() > 1) retVal.deleteCharAt(retVal.length() - 1);
+						retVal.append("}");
 					} else {
-						retVal = "{}";
+						retVal.append("{}");
 					}
 					storeObj = null;
-					return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success(" + retVal + "); };";
+					return ";if (navigator.store.loadAll_success != null) { navigator.store.loadAll_success(" + retVal.toString() + "); };";
 				} catch (Exception e) {
 					return ";if (navigator.store.loadAll_error != null) { navigator.store.loadAll_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
 			case LOAD_COMMAND: // Retrieves a particular value associated to a key in the hash.
 				try {
-					retVal = JAVASCRIPT_NULL; // default return value.
+					retVal.append(JAVASCRIPT_NULL); // default return value.
 					key = instruction.substring(CODE.length() + 6);
 					synchronized(store) {
 						storeObj = store.getContents();
@@ -148,16 +151,18 @@ public class StoreCommand implements Command {
 						if (hash.containsKey(key)) {
 							String value = (String)hash.get(key);
 							value = escapeString(value);
-							retVal = "'" + value + "'";
+							retVal.append("'");
+							retVal.append(value);
+							retVal.append("'");
 							value = null;
 						} else {
-							retVal = JAVASCRIPT_NULL;
+							retVal.append(JAVASCRIPT_NULL);
 						}
 					} else {
-						retVal = JAVASCRIPT_NULL;
+						retVal.append(JAVASCRIPT_NULL);
 					}
 					storeObj = null;
-					return ";if (navigator.store.load_success != null) { navigator.store.load_success(" + retVal + "); };";
+					return ";if (navigator.store.load_success != null) { navigator.store.load_success(" + retVal.toString() + "); };";
 				} catch (Exception e) {
 					return ";if (navigator.store.load_error != null) { navigator.store.load_error('Exception: " + e.getMessage().replace('\'', '`') + "'); };";
 				}
