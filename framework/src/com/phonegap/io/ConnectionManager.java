@@ -297,9 +297,12 @@ public final class ConnectionManager {
 				theResource = Application.class.getResourceAsStream(dataUrl);
 			}
 			
-			byte[] resourceBytes = read(theResource);
-			theResource = null;
-			boutput.write(resourceBytes);
+			if (theResource != null) {
+				byte[] resourceBytes = read(theResource);
+				theResource = null;
+				boutput.write(resourceBytes);
+			}
+
 			boutput.flush();
 			boutput.close();
 			output.flush();
