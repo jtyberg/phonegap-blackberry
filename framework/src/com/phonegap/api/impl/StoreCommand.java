@@ -141,7 +141,6 @@ public class StoreCommand implements Command {
 				}
 			case LOAD_COMMAND: // Retrieves a particular value associated to a key in the hash.
 				try {
-					retVal.append(JAVASCRIPT_NULL); // default return value.
 					key = instruction.substring(CODE.length() + 6);
 					synchronized(store) {
 						storeObj = store.getContents();
