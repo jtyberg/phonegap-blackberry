@@ -13,10 +13,12 @@
 
 	<available file="${jde.home}" property="jde.home.available" />
 	<fail unless="jde.home.available" message="jde.home path not set correctly in ${framework.dir}/common.properties." />
-	
+
+	<!--
 	<path id="import.jars">
 		<fileset dir="${framework.dir}/lib" includes="*.jar" />
 	</path>
+	-->
 
 	<path id="src.files">
 		<fileset dir="${framework.dir}/src" />
@@ -26,7 +28,7 @@
 		<!-- depends on doing the plugin stuff -->
 		<mkdir dir="${framework.build.dir}" />
 		<rapc output="${project.output}" destdir="${framework.build.dir}" generatesourcelist="true">
-			<import refid="import.jars" />
+			<!--<import refid="import.jars" />-->
 			<src refid="src.files" />
 			<jdp file="${framework.dir}/project.properties" />
 		</rapc>
