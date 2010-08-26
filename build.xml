@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="phonegap" default="help">
-	<taskdef resource="bb-ant-defs.xml" />
-	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 
 	<property name="framework.dir" location="framework" />
 	<property name="framework.build.dir" location="${framework.dir}/build" />
 	<property name="app.resources.dir" location="app" />
 	<property name="js.dir" location="js" />
+	<property name="util.dir" location="util" />
+
+	<taskdef resource="bb-ant-defs.xml" />
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+	<!-- Folks should probably have ant-contrib in their ant/lib, but in case they don't... -->
+	<classpath>
+	    <pathelement location="${util.dir}/ant-contrib-1.0b3.jar"/>
+	</classpath>
+	</taskdef>
 
 	<property prefix="project" file="${framework.dir}/project.properties" /> 
 	<property file="${framework.dir}/common.properties" />
