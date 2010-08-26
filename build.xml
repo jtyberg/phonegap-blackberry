@@ -99,7 +99,7 @@ var alert=function(){},device={},Element={};
 		<propertyregex property="app.jde.home"
                input="${jde.home}"
                regexp="\\"
-               replace="\\\\"
+               replace="\\\\\\\\"
                global="true" />
 		
 		<mkdir dir="${output.dir}" />

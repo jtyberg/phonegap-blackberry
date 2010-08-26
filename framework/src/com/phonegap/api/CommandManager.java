@@ -121,20 +121,17 @@ public final class CommandManager {
 				cr = plugin.execute(action, args);
 			}
 		} catch (ClassNotFoundException e) {
-			cr = new CommandResult(CommandResult.Status.CLASSNOTFOUNDEXCEPTION, 
-					"{ message: 'ClassNotFoundException', status: "+CommandResult.Status.CLASSNOTFOUNDEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.CLASS_NOT_FOUND_EXCEPTION);
 		} catch (IllegalAccessException e) {
-			cr = new CommandResult(CommandResult.Status.ILLEGALACCESSEXCEPTION, 
-					"{ message: 'IllegalAccessException', status: "+CommandResult.Status.ILLEGALACCESSEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.ILLEGAL_ACCESS_EXCEPTION);
 		} catch (InstantiationException e) {
-			cr = new CommandResult(CommandResult.Status.INSTANTIATIONEXCEPTION, 
-					"{ message: 'InstantiationException', status: "+CommandResult.Status.INSTANTIATIONEXCEPTION.ordinal()+" }");
+			cr = new CommandResult(CommandResult.Status.INSTANTIATION_EXCEPTION);
 		}
 		// if async we have already returned at this point unless there was an error...
 		if (async) {
 			app.loadUrl(cr.toErrorCallbackString(callbackId));
 		}
-		return ( cr != null ? cr.getResult() : "{ status: 0, message: 'all good' }" );
+		return ( cr != null ? cr.getMessage() : "{ status: 0, message: 'all good' }" );
 	}
 	
 	public void stopXHR() {

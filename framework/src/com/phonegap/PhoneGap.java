@@ -241,8 +241,7 @@ public class PhoneGap extends UiApplication implements RenderingApplication {
 					response = null;
 				} catch (JSONException e) {
 					pendingResponses.addElement(
-						new CommandResult(CommandResult.Status.JSONEXCEPTION, "{message: 'foo'}")
-						.toErrorString());
+						new CommandResult(CommandResult.Status.JSON_EXCEPTION, "").toErrorString());
 				}
 			}
 			cookie = null;

@@ -36,7 +36,7 @@ Building PhoneGap BlackBerry Projects from Eclipse
 If you want to run things from Eclipse you can do that too. Of course it helps a lot with debugging.
 
 1. Launch Eclipse, go to File->New->BlackBerry project.
-2. Choose "Use Existing Source" and navigate to the folder that you specified as the output.dir in step 5 above.
+2. Choose "Create project from existing source" point it to the folder that you specified as the output.dir in step 5 above.
 3. Modify the contents of the "www" directory to add your own HTML, CSS and Javascript.
 4. Create a linked folder in the src folder to the www folder, this is important otherwise Eclipse will not deploy your www folder to the device / simulator.
 5. Run or debug from Eclipse as desired. NOTE: Whatever simulator or device you are running / debugging on must have the PhoneGapBlackBerryLib.cod on that device - this is most easily achieved by running 'ant load-simulator' or load-device as in step 6 above.
