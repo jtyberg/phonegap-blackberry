@@ -19,7 +19,7 @@
 
 	<path id="src.files">
 		<fileset dir="src" />
-		<fileset dir="${build.dir}/${www.dir}" />
+		<fileset dir="${build.dir}/www" />
 	</path>
 
 	<target name="build" depends="clean">
