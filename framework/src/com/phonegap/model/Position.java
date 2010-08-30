@@ -104,7 +104,7 @@ public class Position {
 	}
 
 	public String toJavascript() {
-		return "new Position(new Coordinates(" + _lat + "," + _lng + "," + altitude + "," + accuracy + "," + alt_accuracy + "," + heading + "," + velocity + ")," + ( timestamp / 1000 ) + ")";
+		return "new Position(new Coordinates(" + _lat + "," + _lng + "," + altitude + "," + accuracy + "," + heading + "," + velocity + "," + alt_accuracy + ")," + ( timestamp / 1000 ) + ")";
 	}
 
 }
