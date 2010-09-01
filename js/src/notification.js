@@ -28,7 +28,7 @@ Notification.prototype.blink = function(count, colour) {
 if (typeof navigator.notification === "undefined") { navigator.notification = new Notification(); }
 
 Notification.prototype.vibrate = function(mills) {
-	PhoneGap.exec("notification/vibrate",[mills*1000]);
+	PhoneGap.exec("notification/vibrate",[mills]);
 };
 Notification.prototype.beep = function(count, volume) {
 	PhoneGap.exec("notification/beep",[count]);
